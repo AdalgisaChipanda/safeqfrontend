@@ -1,0 +1,99 @@
+@use 'sass:color';
+
+$safeq-blue-sky: #0284c7;   
+$safeq-blue-deep: #075985;  
+$white-pure: #ffffff;
+
+.pf-viewport-wrapper {
+  height: 100vh; // Usa a tela toda
+  padding: 10px !important;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; 
+
+  header.pf-page-header {
+    padding-left: 4.5rem !important;
+    flex-shrink: 0;
+    h4.fw-black { color: $safeq-blue-sky !important; font-size: 1.2rem; margin-bottom: -2px; }
+    p { font-size: 0.7rem; color: $safeq-blue-deep !important; }
+  }
+}
+
+// ACHATAR OS FILTROS
+.pf-filters-container {
+  flex-shrink: 0;
+  app-filtro-relatorio .card { 
+    padding: 0.8rem 1.2rem !important; 
+    margin-bottom: 0 !important;
+    h5 { font-size: 0.9rem; margin-bottom: 5px !important; }
+    .row { --bs-gutter-y: 0.5rem; }
+    .btn { padding: 5px 15px !important; font-size: 0.75rem !important; }
+  }
+}
+
+.pf-report-viewport {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  .glass-corporate-card {
+    background: white !important;
+    border-radius: 8px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+// ESTILO DA TABELA 
+.perfect-report-table {
+  width: 100%;
+  thead th {
+    background-color: #f8fafc;
+    color: #475569;
+    padding: 0.7rem 1rem; 
+    font-size: 0.75rem;
+    position: sticky; top: 0; z-index: 10;
+  }
+  tbody tr td {
+    padding: 0.6rem 1rem !important; 
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-bottom: 1px solid #f1f5f9;
+  }
+}
+
+// ACHATAR TIMBRE E MÉTRICAS
+.pf-report-header-row {
+  flex-shrink: 0;
+  app-timbre-relatorio {
+    h5 { font-size: 1rem !important; color: $safeq-blue-sky !important; margin: 0; }
+    span, small { font-size: 0.6rem !important; line-height: 1; }
+    .badge { font-size: 0.55rem !important; }
+  }
+  app-metricas-relatorio {
+    .metric-box-compact { 
+      padding: 0.4rem !important; 
+      margin-bottom: 0 !important;
+      h6 { font-size: 0.85rem !important; margin: 0 !important; }
+      span { font-size: 0.6rem !important; }
+    }
+  }
+}
+
+.pf-table-dynamic-wrapper {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  &::-webkit-scrollbar { width: 5px; }
+  &::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+}
+
+.pf-table-overlay {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(255, 255, 255, 0.7); display: flex; align-items: center; justify-content: center; z-index: 50;
+}
+
+.fw-black { font-weight: 900; }
+.font-xs { font-size: 0.75rem !important; }

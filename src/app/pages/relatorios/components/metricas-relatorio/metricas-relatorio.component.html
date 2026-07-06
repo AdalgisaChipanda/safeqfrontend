@@ -1,0 +1,20 @@
+<div class="row g-1 text-start">
+  <div class="col-4">
+    <div class="metric-box-compact p-1 border-start border-4 border-success bg-light">
+      <span class="text-success fw-bold" style="font-size: 0.6rem;">RECEITAS</span>
+      <h6 class="fw-black m-0" style="font-size: 0.85rem;">{{ totalReceitas | currency:'Kz' }}</h6>
+    </div>
+  </div>
+  <div class="col-4">
+    <div class="metric-box-compact p-1 border-start border-4 border-danger bg-light">
+      <span class="text-danger fw-bold" style="font-size: 0.6rem;">DESPESAS</span>
+      <h6 class="fw-black m-0" style="font-size: 0.85rem;">{{ totalDespesas | currency:'Kz' }}</h6>
+    </div>
+  </div>
+  <div class="col-4">
+    <div class="metric-box-compact p-1 border-start border-4 border-primary bg-primary-subtle">
+      <span class="text-primary fw-bold" style="font-size: 0.6rem;">LÍQUIDO</span>
+      <h6 class="fw-black m-0" style="font-size: 0.85rem;">{{ totalResultado | currency:'Kz' }}</h6>
+    </div>
+  </div>
+</div>

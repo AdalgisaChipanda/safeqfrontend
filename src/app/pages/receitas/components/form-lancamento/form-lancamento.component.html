@@ -1,0 +1,65 @@
+<div class="card glass-corporate-card p-3 border-0 h-100 shadow-sm">
+  <div class="text-start mb-2">
+    <h6 class="fw-bold text-dark m-0 d-flex align-items-center gap-2">
+      <i class="bi bi-plus-circle-dotted text-primary"></i> Novo Lançamento
+    </h6>
+  </div>
+
+  <div class="d-flex gap-2 mb-3">
+    <button type="button" class="btn btn-outline-success w-50 fw-bold btn-sm py-2" 
+            [class.active]="tipoLancamento === 'receita'" (click)="mudarTipo('receita')">
+      <i class="bi bi-arrow-up-circle"></i> Receita
+    </button>
+    <button type="button" class="btn btn-outline-danger w-50 fw-bold btn-sm py-2" 
+            [class.active]="tipoLancamento === 'despesa'" (click)="mudarTipo('despesa')">
+      <i class="bi bi-arrow-down-circle"></i> Despesa
+    </button>
+  </div>
+
+  <form (ngSubmit)="salvar()">
+    <div class="row g-2">
+      <!-- Valor e Data  -->
+      <div class="col-6 mb-2">
+        <label class="form-label font-xs fw-bold text-secondary mb-1">VALOR (AKZ)</label>
+        <input type="number" [(ngModel)]="transacao.valor" name="valor" class="form-control form-control-sm fw-bold" placeholder="0,00" required>
+      </div>
+      <div class="col-6 mb-2">
+        <label class="form-label font-xs fw-bold text-secondary mb-1">DATA</label>
+        <input type="date" [(ngModel)]="transacao.data" name="data" class="form-control form-control-sm" required>
+      </div>
+
+      <div class="col-12 mb-2">
+        <label class="form-label font-xs fw-bold text-secondary mb-1">ENTIDADE</label>
+        <input type="text" [(ngModel)]="transacao.fornecedor" name="fornecedor" class="form-control form-control-sm" placeholder="Nome do cliente/fornecedor" required>
+      </div>
+
+      <!-- Categoria e Pagamento  -->
+      <div class="col-6 mb-2">
+        <label class="form-label font-xs fw-bold text-secondary mb-1">CATEGORIA</label>
+        <select [(ngModel)]="transacao.categoria_id" name="categoria_id" class="form-select form-select-sm" required>
+          <option value="" disabled selected>Selecionar...</option>
+          <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.nome }}</option>
+        </select>
+      </div>
+      <div class="col-6 mb-2">
+        <label class="form-label font-xs fw-bold text-secondary mb-1">MEIO</label>
+        <select [(ngModel)]="transacao.forma_pagamento_id" name="forma_pagamento_id" class="form-select form-select-sm" required>
+          <option value="" disabled selected>Selecionar...</option>
+          <option *ngFor="let f of formasPagamento" [value]="f.id">{{ f.nome }}</option>
+        </select>
+      </div>
+
+      <div class="col-12 mb-3">
+        <label class="form-label font-xs fw-bold text-secondary mb-1">NOTAS</label>
+        <textarea [(ngModel)]="transacao.descricao" name="descricao" class="form-control form-control-sm" rows="2" placeholder="Obs..."></textarea>
+      </div>
+    </div>
+
+    <button type="submit" class="btn w-100 fw-bold text-white text-uppercase py-2" 
+            [class.btn-success]="tipoLancamento === 'receita'" 
+            [class.btn-danger]="tipoLancamento === 'despesa'" [disabled]="carregando">
+      <span *ngIf="carregando" class="spinner-border spinner-border-sm me-1"></span>
+      Confirmar {{ tipoLancamento === 'receita' ? 'Receita' : 'Despesa' }}
+    </button>
+  </form>
+</div>

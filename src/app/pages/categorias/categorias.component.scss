@@ -1,0 +1,118 @@
+@use 'sass:color';
+
+// VARIÁVEIS DE COR
+$safeq-blue-sky: #0284c7;   
+$safeq-blue-deep: #075985;  
+$white-pure: #ffffff;
+$text-dark-corporate: #1e293b;
+
+$glass-gray-base: rgba(241, 245, 249, 0.85);
+$glass-gray-border: rgba(15, 23, 42, 0.12);
+$glass-gray-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.05);
+
+// LAYOUT DE TELA CHEIA
+.pf-viewport-wrapper {
+  height: calc(100vh - 45px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  header.pf-page-header {
+    padding-left: 4.5rem !important; 
+    transition: padding-left 0.25s ease;
+    
+    h4.fw-black { 
+      color: $safeq-blue-sky !important; 
+      font-weight: 900 !important;
+      letter-spacing: -0.5px;
+    }
+    p { color: $safeq-blue-deep !important; font-size: 0.75rem; }
+  }
+}
+
+.pf-main-content { flex: 1; min-height: 0; height: 100%; }
+
+// Ajuste das Colunas para não quebrar com max-width 1200px
+.pf-column { height: 100%; display: flex; flex-direction: column; }
+.pf-column-auto { height: auto; } 
+
+// TABELA COMPACTA
+.pf-table-dynamic-container {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto !important;
+  background: white;
+  border-radius: 8px;
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+}
+
+.perfect-report-table {
+  width: 100%;
+  thead th {
+    background-color: #f8fafc; color: #475569; font-size: 0.75rem;
+    text-transform: uppercase; font-weight: 800; padding: 0.8rem 1rem;
+    border-bottom: 2px solid #edf2f7;
+    position: sticky; top: 0; z-index: 10;
+  }
+  tbody tr td { 
+    padding: 0.75rem 1rem; 
+    border-bottom: 1px solid #f1f5f9; 
+    font-size: 0.88rem; color: #1e293b; font-weight: 600;
+  }
+}
+
+// FORMULÁRIO E INPUTS
+.form-control-custom { 
+  padding: 0.65rem 0.85rem; border: 1px solid #cbd5e1; border-radius: 6px !important; 
+  font-size: 0.9rem; background-color: rgba(255, 255, 255, 0.95);
+  color: $text-dark-corporate !important; font-weight: 600;
+  &:focus { border-color: $safeq-blue-sky; box-shadow: 0 0 0 4px rgba($safeq-blue-sky, 0.15); } 
+}
+
+.glass-corporate-card {
+  border-radius: 8px !important; 
+  background: $glass-gray-base !important;
+  backdrop-filter: blur(14px) !important; 
+  border: 1px solid $glass-gray-border !important; 
+  box-shadow: $glass-gray-shadow !important; 
+}
+
+// BOTÕES SELETORES DO FORMULÁRIO (Correção para não desalinhar)
+.btn-group-selector {
+  display: flex;
+  gap: 4px;
+  .btn {
+    flex: 1;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 8px 2px;
+    white-space: nowrap;
+  }
+}
+
+.badge-esfumado {
+  padding: 0.35rem 0.85rem; border-radius: 20px; font-weight: 800; font-size: 0.65rem;
+  text-transform: uppercase; display: inline-block;
+  &.receita { background-color: #e6f4ea; color: #10b981 !important; }
+  &.despesa { background-color: #fce8e6; color: #ef4444 !important; }
+  &.ambos { background-color: #e0f2fe; color: #0284c7 !important; }
+}
+
+.custom-center-modal-overlay {
+  position: fixed !important; top: 0; left: 0; width: 100vw; height: 100vh;
+  background-color: rgba(15, 23, 42, 0.65) !important; backdrop-filter: blur(5px) !important; z-index: 9999999 !important;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.custom-center-modal-card {
+  width: 400px !important; background-color: $white-pure !important;
+  border-radius: 8px !important; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5) !important;
+  animation: modalScaleUp 0.18s ease-in-out;
+}
+
+@keyframes modalScaleUp { from { transform: scale(0.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.animate-fade-in { animation: fadeIn 0.4s ease-out; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.fw-black { font-weight: 900; }
+.font-xs { font-size: 0.75rem !important; }

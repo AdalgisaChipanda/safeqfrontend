@@ -1,0 +1,96 @@
+<div class="table-container-clean">
+  <table class="table table-hover align-middle text-start m-0 perfect-report-table">
+    <thead class="table-light-custom">
+      <tr>
+        <th>LANÇAMENTO / DATA</th>
+        <th>CATEGORIA / CANAL</th>
+        <th>DESCRIÇÃO / ENTIDADE</th>
+        <th class="text-end">VALOR</th>
+        <th class="text-center">AÇÕES</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of historico" class="animate-fade-row">
+        <!-- DATA E TIPO -->
+        <td>
+          <div class="d-flex align-items-center gap-3">
+            <div class="icon-indicator p-2 rounded-2" 
+                 [ngClass]="item.tipo === 'receita' ? 'bg-success-soft' : 'bg-danger-soft'">
+              <i class="bi" 
+                 [class.bi-graph-up-arrow]="item.tipo === 'receita'" 
+                 [class.bi-graph-down-arrow]="item.tipo === 'despesa'"></i>
+            </div>
+            <div>
+              <div class="fw-bold text-dark font-sm">{{ item.data | date:'dd/MM/yyyy' }}</div>
+              <span class="badge-esfumado mt-1" [ngClass]="item.tipo === 'receita' ? 'receita' : 'despesa'">
+                {{ item.tipo }}
+              </span>
+            </div>
+          </div>
+        </td>
+
+        <!-- CATEGORIA E MEIO DE PAGAMENTO -->
+        <td>
+          <div class="fw-bold text-dark font-sm">{{ item.categoria?.nome || 'Geral' }}</div>
+          <small class="text-muted d-block font-xs">
+            <i class="bi bi-wallet2"></i> {{ item.forma_pagamento?.nome || 'N/A' }}
+          </small>
+        </td>
+
+        <!-- DESCRIÇÃO E ENTIDADE -->
+        <td>
+          <div class="fw-bold text-primary font-sm">{{ item.fornecedor || '---' }}</div>
+          <small class="text-muted text-truncate d-block" style="max-width: 260px;" [title]="item.descricao">
+            {{ item.descricao || 'Sem observações adicionais' }}
+          </small>
+        </td>
+
+        <!-- VALOR FORMATADO  -->
+        <td class="text-end fw-black font-sm" [ngClass]="item.tipo === 'receita' ? 'text-success' : 'text-danger'">
+          {{ item.tipo === 'receita' ? '+' : '-' }} {{ item.valor | currency:'':'':'1.0-0' }},00
+        </td>
+
+        <!-- ACÇÕES OPERACIONAIS -->
+        <td class="text-center">
+          <div class="d-flex justify-content-center gap-1" *ngIf="usuarioPerfil !== 'diretor'; else readOnly">
+            <button type="button" (click)="editar(item)" class="btn btn-action-icon btn-outline-primary" title="Editar Lançamento">
+              <i class="bi bi-pencil-square"></i>
+            </button>
+            <button type="button" (click)="excluir(item)" class="btn btn-action-icon btn-outline-danger" title="Eliminar Registo">
+              <i class="bi bi-trash3-fill"></i>
+            </button>
+          </div>
+          <ng-template #readOnly>
+            <span class="badge bg-light text-muted border font-xs px-2 py-1">Auditado</span>
+          </ng-template>
+        </td>
+      </tr>
+
+      <!-- FEEDBACK DE LISTA VAZIA -->
+      <tr *ngIf="historico.length === 0">
+        <td colspan="5" class="text-center py-5 text-muted fw-semibold">
+          <i class="bi bi-folder-x fs-2 d-block mb-2 text-secondary"></i>
+          Nenhum lançamento financeiro localizado na base analítica.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- RODAPÉ DE PAGINAÇÃO  -->
+<div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3">
+  <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 1px;">
+    Mostrando {{ historico.length }} de {{ totalRegistos }} lançamentos registados
+  </small>
+  
+  <div class="d-flex gap-2">
+    <button type="button" class="btn btn-sm btn-outline-primary fw-bold px-3" 
+            [disabled]="paginaAtual === 1" (click)="mudarPagina(paginaAtual - 1)">
+      <i class="bi bi-chevron-left"></i> Anterior
+    </button>
+    <button type="button" class="btn btn-sm btn-outline-primary fw-bold px-3" 
+            [disabled]="paginaAtual === totalPaginas" (click)="mudarPagina(paginaAtual + 1)">
+      Próximo <i class="bi bi-chevron-right"></i>
+    </button>
+  </div>
+</div>

@@ -1,0 +1,66 @@
+<div class="pf-viewport-wrapper p-2 animate-fade-in">
+  
+  <div *ngIf="mensagemSucesso" class="alert alert-success custom-toast" role="alert">
+  <i class="bi bi-check-circle-fill me-2"></i>{{ mensagemSucesso }}
+</div>
+
+  <!-- CABEÇALHO  -->
+  <header class="pf-page-header mb-2">
+    <div class="header-title-block">
+      <h4 class="fw-black m-0 text-uppercase">Relatórios Analíticos</h4>
+      <p class="m-0 fw-bold font-xs text-primary">Auditoria financeira em tempo real.</p>
+    </div>
+  </header>
+
+  <!-- FILTROS ACHATADOS -->
+  <div class="pf-filters-container mb-2">
+    <app-filtro-relatorio 
+      [tipoDemonstrativo]="tipoDemonstrativo"
+      [dataInicial]="dataInicial"
+      [dataFinal]="dataFinal"
+      (tipoDemonstrativoChange)="tipoDemonstrativo = $event"
+      (dataInicialChange)="dataInicial = $event"
+      (dataFinalChange)="dataFinal = $event"
+      (onFiltrar)="carregarRelatorioReal()"
+      (onExcel)="exportarExcel()"
+      (onPdf)="imprimirPDF()">
+    </app-filtro-relatorio>
+  </div>
+
+  <!-- ÁREA DA FOLHA -->
+  <section class="pf-report-viewport">
+    <div class="card glass-corporate-card p-3 border-0 h-100 d-flex flex-column shadow-lg">
+      
+      <!-- TIMBRE + MÉTRICAS -->
+      <div class="row align-items-center border-bottom mb-2 pb-2 g-2 pf-report-header-row">
+        <div class="col-md-6 border-end">
+          <app-timbre-relatorio
+            [usuarioPerfil]="usuarioPerfil"
+            [usuarioNome]="usuarioNome"
+            [dataInicial]="dataInicial"
+            [dataFinal]="dataFinal">
+          </app-timbre-relatorio>
+        </div>
+        <div class="col-md-6">
+          <app-metricas-relatorio
+            [totalReceitas]="totais.receitas"
+            [totalDespesas]="totais.despesas"
+            [totalResultado]="totais.resultado">
+          </app-metricas-relatorio>
+        </div>
+      </div>
+
+      <!-- TABELA COM ESPAÇO  -->
+      <div class="pf-table-dynamic-wrapper flex-grow-1 position-relative">
+        <div *ngIf="carregando" class="pf-table-overlay">
+          <div class="spinner-border text-primary"></div>
+        </div>
+
+        <div class="h-100 overflow-auto">
+          <app-tabela-relatorio [lancamentos]="lancamentos"></app-tabela-relatorio>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</div>

@@ -1,0 +1,209 @@
+@use 'sass:color';
+
+$safeq-blue-sky: #0284c7;
+$white-pure: #ffffff;
+$border-white-translucent: rgba(255, 255, 255, 0.15);
+
+.login-ocean-wrapper {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/esta.png');
+    background-size: cover;
+    background-position: center;
+    filter: grayscale(100%) blur(8px) brightness(40%); 
+    transform: scale(1.05);
+    z-index: 1;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(2, 132, 199, 0.45) 0%, rgba(12, 74, 110, 0.6) 100%);
+    z-index: 2;
+  }
+
+  .custom-corporate-alert {
+    position: fixed;
+    top: 25px;
+    right: 30px;
+    width: 360px;
+    background-color: rgba(254, 242, 242, 0.98);
+    border: 1px solid #fee2e2;
+    color: #991b1b;
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    font-size: 0.95rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    z-index: 9999;
+    animation: alertSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  // CONTAINER DE AMPLIADO 
+  .login-flat-container {
+    position: relative;
+    width: 100%;
+    max-width: 920px; 
+    padding: 2.5rem;
+    z-index: 3;
+    
+    .border-white-10 {
+      border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+
+    @media (min-width: 768px) {
+      .border-end-desktop {
+        border-right: 1px solid rgba(255, 255, 255, 0.15) !important;
+      }
+    }
+  }
+
+  // Identidade Visual Ampliada
+  .login-brand-logo { 
+    max-height: 56px; 
+    object-fit: contain; 
+  }
+  
+  .brand-title-portal { 
+    font-weight: 900; 
+    font-size: 2.4rem; 
+    letter-spacing: -0.5px; 
+  }
+  
+  .text-white-70 { 
+    color: rgba($white-pure, 0.85); 
+    font-size: 1rem; // Texto de apoio ampliado
+    letter-spacing: 0.5px;
+  }
+  
+  .small-label { 
+    font-size: 0.95rem; // Labels de e-mail 
+    margin-bottom: 0.6rem; 
+    letter-spacing: 0.3px; 
+  }
+
+  // CAMPOS DE ENTRADA 
+  .input-group-custom {
+    display: flex;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 10px;
+    overflow: hidden;
+    backdrop-filter: blur(4px);
+    transition: all 0.25s ease-in-out;
+
+    .input-icon-box {
+      padding: 0.85rem 1.1rem; // Maior área interna para os ícones
+      color: rgba($white-pure, 0.8);
+      background-color: rgba(255, 255, 255, 0.05);
+      border-right: 1px solid rgba(255, 255, 255, 0.2);
+      font-size: 1.1rem;
+    }
+
+    .form-control-custom {
+      flex-grow: 1;
+      border: none;
+      background: transparent;
+      padding: 0.85rem 1.1rem; 
+      font-size: 1.1rem; 
+      color: $white-pure;
+      outline: none;
+      &::placeholder { color: rgba($white-pure, 0.55); }
+    }
+
+    &:focus-within {
+      border-color: $safeq-blue-sky;
+      box-shadow: 0 0 0 4px rgba($safeq-blue-sky, 0.25);
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  // BOTÃO INICIAR SESSÃO AMPLIADO
+  .btn-login-action {
+    background-color: $safeq-blue-sky;
+    color: $white-pure;
+    border: none;
+    padding: 0.9rem; 
+    border-radius: 10px;
+    font-size: 1.1rem; 
+    letter-spacing: 0.5px;
+    transition: all 0.25s ease-in-out;
+    
+    &:hover {
+      background-color: color.adjust($safeq-blue-sky, $lightness: -5%);
+      box-shadow: 0 10px 25px rgba($safeq-blue-sky, 0.4);
+    }
+  }
+
+  // BLOCO DE DEMONSTRAÇÃO AMPLIADO 
+  .demo-access-block {
+    .text-white-70 {
+      font-size: 0.85rem; // Título da seção de demonstração maior
+    }
+
+    .demo-badge-row {
+      background-color: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(4px);
+      padding: 0.75rem 1rem !important; 
+      margin-bottom: 0.75rem;
+
+      .small {
+        font-size: 1rem !important; 
+      }
+      
+      .expression-email { 
+        font-size: 0.85rem; 
+        color: rgba($white-pure, 0.65) !important;
+      }
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.16);
+        border-color: rgba(255, 255, 255, 0.3);
+        transform: translateX(4px);
+      }
+    }
+
+    // Distintivos de cargo ampliados
+    .badge {
+      font-size: 0.8rem !important;
+      padding: 0.4rem 0.75rem !important;
+    }
+    .bg-admin-soft { background-color: rgba(99, 102, 241, 0.25); }
+    .text-admin { color: #c7d2fe; font-weight: 700; }
+    .bg-gestor-soft { background-color: rgba(34, 197, 94, 0.25); }
+    .text-gestor { color: #a7f3d0; font-weight: 700; }
+    .bg-diretor-soft { background-color: rgba(234, 179, 8, 0.25); }
+    .text-diretor { color: #fef08a; font-weight: 700; }
+  }
+
+  // Link de Retorno
+  .link-return-welcome {
+    color: rgba($white-pure, 0.85);
+    font-size: 1rem; // Link de voltar maior na base
+    transition: all 0.2s ease-in-out;
+    &:hover { color: $safeq-blue-sky; text-shadow: 0 0 10px rgba($safeq-blue-sky, 0.4); }
+  }
+}
+
+@keyframes alertSlideIn {
+  from { opacity: 0; transform: translateX(50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.fw-black { font-weight: 900; }

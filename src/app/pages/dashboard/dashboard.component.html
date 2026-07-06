@@ -1,0 +1,118 @@
+<div class="pf-dashboard-viewport animate-fade-in">
+  
+  <!-- CABEÇALHO -->
+  <header class="d-flex justify-content-between align-items-center mb-4">
+    <div class="header-title-block">
+      <h2 class="fw-black m-0 text-white">Painel de Indicadores</h2>
+      <p class="text-white-50 small m-0">Inteligência financeira em tempo real.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <div class="input-group input-group-custom-sm">
+        <select class="form-select" (change)="onMesChange($event)">
+          <option value="">Meses (Todos)</option>
+          <option *ngFor="let m of meses" [value]="m.id">{{ m.nome }}</option>
+        </select>
+      </div>
+      <div class="input-group input-group-custom-sm">
+        <select class="form-select" (change)="onAnoChange($event)">
+          <option *ngFor="let ano of anos" [value]="ano">{{ ano }}</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <!-- BOTÃO RESTAURAR -->
+  <div class="mb-3" *ngIf="temSecoesOcultas()">
+    <button class="btn btn-restaurar-wide" (click)="restaurarSecoes()">
+      <i class="bi bi-arrow-counterclockwise"></i> Restaurar Visão
+    </button>
+  </div>
+
+  <!-- KPIS SUPERIORES (SEM X) -->
+  <div class="row g-3 mb-4 animate-slide-up">
+    <div class="col-md-3" *ngFor="let k of [
+      {label:'Receita Total', val:kpis.receita_total, color:'emerald', icon:'bi-graph-up-arrow', desc:'Entrada bruta'},
+      {label:'Despesa Total', val:kpis.despesa_total, color:'coral', icon:'bi-graph-down-arrow', desc:'Custos operacionais'},
+      {label:'Lucro Líquido', val:kpis.lucro_liquido, color:'sky', icon:'bi-bank', desc:'Saldo disponível'},
+      {label:'Rentabilidade', val:kpis.margem_rentabilidade, color:'white', icon:'bi-percent', desc:'Performance'}
+    ]">
+      <div class="kpi-card-main" [ngClass]="'border-left-' + k.color">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <small class="kpi-label-top">{{ k.label }}</small>
+            <h4 class="kpi-number fw-black m-0">{{ k.label === 'Rentabilidade' ? k.val : (k.val | currency:'AOA ':'symbol':'1.0-0') }}</h4>
+            <small class="kpi-sub-text">{{ k.desc }}</small>
+          </div>
+          <div class="kpi-icon-box" [ngClass]="'bg-soft-' + k.color"><i class="bi {{ k.icon }}"></i></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRÁFICOS (Evolução e Distribuição) -->
+  <div class="row g-3 mb-3">
+    <div [class]="secoesVisiveis.categorias ? 'col-xl-7' : 'col-xl-12'" *ngIf="secoesVisiveis.evolucao">
+      <div class="card p-3 h-100 position-relative">
+        <button class="btn-close-simple" (click)="fecharSecao('evolucao')"><i class="bi bi-x-lg"></i></button>
+        <h6 class="fw-bold text-uppercase font-xxs border-bottom pb-2 mb-3">Evolução de Fluxos</h6>
+        <div class="canvas-wrapper"><canvas #barChart></canvas></div>
+      </div>
+    </div>
+
+    <div [class]="secoesVisiveis.evolucao ? 'col-xl-5' : 'col-xl-12'" *ngIf="secoesVisiveis.categorias">
+      <div class="card p-3 h-100 position-relative">
+        <button class="btn-close-simple" (click)="fecharSecao('categorias')"><i class="bi bi-x-lg"></i></button>
+        <h6 class="fw-bold text-uppercase font-xxs border-bottom pb-2 mb-2">Distribuição</h6>
+        <div class="canvas-wrapper-doughnut-large"><canvas #pieChart></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESUMOS INFERIORES (3 Colunas Elegantes) -->
+  <!-- 'align-items-start' garante que os cards não fiquem esticados com espaço branco embaixo -->
+  <div class="row g-3 animate-slide-up align-items-start">
+    
+    <!-- Fontes de Receita -->
+    <div class="col-lg" *ngIf="secoesVisiveis.fontesReceita">
+      <div class="card p-3 position-relative shadow-sm h-auto">
+        <button class="btn-close-simple" (click)="fecharSecao('fontesReceita')"><i class="bi bi-x-lg"></i></button>
+        <h6 class="fw-bold border-bottom pb-2 mb-3 font-xxs text-uppercase">Fontes de Receita</h6>
+        <div *ngFor="let f of fontesReceita" class="mb-2">
+          <div class="d-flex justify-content-between font-xxs fw-bold mb-1">
+            <span>{{f.nome}}</span> <span>{{f.percentual}}%</span>
+          </div>
+          <div class="progress"><div class="progress-bar bg-success" [style.width.%]="f.percentual"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fontes de Despesa -->
+    <div class="col-lg" *ngIf="secoesVisiveis.fontesDespesa">
+      <div class="card p-3 position-relative shadow-sm h-auto">
+        <button class="btn-close-simple" (click)="fecharSecao('fontesDespesa')"><i class="bi bi-x-lg"></i></button>
+        <h6 class="fw-bold border-bottom pb-2 mb-3 font-xxs text-uppercase">Fontes de Despesa</h6>
+        <div *ngFor="let f of fontesDespesa" class="mb-2">
+          <div class="d-flex justify-content-between font-xxs fw-bold mb-1">
+            <span>{{f.nome}}</span> <span class="text-danger">{{f.percentual}}%</span>
+          </div>
+          <div class="progress"><div class="progress-bar bg-danger" [style.width.%]="f.percentual"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Canais Financeiros (Formas de Pagamento) -->
+    <div class="col-lg" *ngIf="secoesVisiveis.meiosPagamento">
+      <div class="card p-3 position-relative shadow-sm h-auto">
+        <button class="btn-close-simple" (click)="fecharSecao('meiosPagamento')"><i class="bi bi-x-lg"></i></button>
+        <h6 class="fw-bold border-bottom pb-2 mb-3 font-xxs text-uppercase">Canais Financeiros</h6>
+        <div *ngFor="let m of meiosPagamento" class="mb-2">
+          <div class="d-flex justify-content-between font-xxs fw-bold mb-1">
+            <span>{{m.nome}}</span> <span class="text-primary">{{m.percentual}}%</span>
+          </div>
+          <div class="progress"><div class="progress-bar bg-primary" [style.width.%]="m.percentual"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

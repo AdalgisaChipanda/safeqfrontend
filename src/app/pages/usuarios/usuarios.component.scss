@@ -1,0 +1,67 @@
+@use 'sass:color';
+
+$safeq-blue-sky: #0284c7;   
+$safeq-blue-deep: #075985;  
+
+.pf-viewport-wrapper {
+  height: calc(100vh - 45px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  header.pf-page-header {
+    padding-left: 4.5rem !important; 
+    transition: padding-left 0.25s ease;
+    h4.fw-black { color: $safeq-blue-sky !important; font-weight: 900 !important; }
+    p { color: $safeq-blue-deep !important; font-weight: 700; }
+  }
+}
+
+.pf-main-content { 
+  flex: 1; 
+  display: flex; 
+  align-items: flex-start; // ✅ Faz os cartões não esticarem até o fundo
+}
+
+.pf-column-auto { height: auto !important; }
+
+// BARRA DE ROLAGEM IGUAL A CATEGORIA
+.pf-table-dynamic-container {
+  overflow-y: auto !important;
+  background: white;
+  border-radius: 8px;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-thumb { 
+    background: #cbd5e1; 
+    border-radius: 10px; 
+    &:hover { background: #94a3b8; }
+  }
+}
+
+.perfect-report-table {
+  width: 100%;
+  thead th {
+    background-color: #f8fafc; color: #475569; font-size: 0.75rem;
+    text-transform: uppercase; font-weight: 800; padding: 1rem; border-bottom: 2px solid #edf2f7;
+    position: sticky; top: 0; z-index: 10;
+  }
+  tbody tr td { padding: 0.8rem 1rem; border-bottom: 1px solid #f1f5f9; font-size: 0.88rem; color: #1e293b; font-weight: 600; }
+}
+
+.glass-corporate-card {
+  border-radius: 8px !important; 
+  background: rgba(241, 245, 249, 0.85) !important;
+  backdrop-filter: blur(14px) !important; 
+  border: 1px solid rgba(15, 23, 42, 0.12) !important; 
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05) !important; 
+}
+
+// BADGES REDONDOS
+.bg-admin-soft { background-color: #fee2e2; color: #991b1b; font-weight: 800; border-radius: 20px; }
+.bg-gestor-soft { background-color: #e6f4ea; color: #137333; font-weight: 800; border-radius: 20px; }
+.bg-diretor-soft { background-color: #e0f2fe; color: #0369a1; font-weight: 800; border-radius: 20px; }
+
+.fw-black { font-weight: 900; }
+.font-xs { font-size: 0.75rem !important; }
+.btn-xs { padding: 0.25rem 0.6rem; font-size: 0.75rem; border-radius: 4px; }

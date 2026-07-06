@@ -1,0 +1,42 @@
+<div class="mb-2 d-flex align-items-center justify-content-between text-start">
+  <h6 class="fw-black text-dark text-uppercase tracking-wider m-0" style="font-size: 0.75rem;">
+    <i class="bi bi-list-task me-2 text-primary"></i>Extrato de Lançamentos ({{ lancamentos.length }})
+  </h6>
+</div>
+
+<!-- A tabela -->
+<table class="table table-hover align-middle m-0 perfect-report-table">
+  <thead class="table-light-custom sticky-top bg-white">
+    <tr>
+      <th style="width: 14%;">DATA</th>
+      <th style="width: 12%;">TIPO</th>
+      <th style="width: 20%;">CATEGORIA</th>
+      <th>DESCRIÇÃO / ENTIDADE</th>
+      <th style="width: 18%;" class="text-end">VALOR (AKZ)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let item of lancamentos" class="animate-fade-row">
+      <td class="font-sm text-dark fw-semibold">{{ item.data | date:'dd/MM/yyyy' }}</td>
+      <td>
+        <span class="badge font-xs tracking-widest text-uppercase rounded-0 px-2" [ngClass]="item.tipo === 'receita' ? 'bg-success text-success bg-opacity-10' : 'bg-danger text-danger bg-opacity-10'">
+          {{ item.tipo === 'receita' ? 'Entrada' : 'Saída' }}
+        </span>
+      </td>
+      <td class="font-sm text-dark fw-bold">{{ item.categoria?.nome || 'Geral' }}</td>
+      <td>
+        <div class="fw-semibold text-dark font-sm text-truncate" style="max-width: 280px;">{{ item.descricao || 'Sem notas' }}</div>
+        <small *ngIf="item.fornecedor" class="text-muted d-block font-xs mt-0"><i class="bi bi-building"></i> {{ item.fornecedor }}</small>
+      </td>
+      <td class="text-end fw-black font-sm" [ngClass]="item.tipo === 'receita' ? 'text-success' : 'text-danger'">
+        {{ item.tipo === 'receita' ? '+' : '-' }} {{ item.valor | currency:'':'':'1.0-0' }},00
+      </td>
+    </tr>
+    
+    <tr *ngIf="lancamentos.length === 0">
+      <td colspan="5" class="text-center py-5 text-muted fw-semibold">
+        <i class="bi bi-folder-x fs-2 d-block mb-2 text-secondary"></i> Nenhum registro localizado.
+      </td>
+    </tr>
+  </tbody>
+</table>

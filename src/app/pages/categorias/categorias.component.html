@@ -1,0 +1,138 @@
+<div class="pf-viewport-wrapper p-3 animate-fade-in">
+  
+  <div *ngIf="mensagemSucesso" class="alert alert-success custom-toast" role="alert">
+    <i class="bi bi-check-circle-fill me-2"></i>{{ mensagemSucesso }}
+  </div>
+
+  <header class="d-flex justify-content-between align-items-center mb-2 pf-page-header">
+    <div class="header-title-block text-start">
+      <h4 class="fw-black m-0 text-uppercase">Painel Geral de Categorias</h4>
+      <p class="m-0 fw-bold font-xs">Parametrização de fluxos em tempo real.</p>
+    </div>
+    
+    <button *ngIf="usuarioPerfil !== 'diretor'" (click)="alternarVisibilidadeFormulario()" class="btn btn-light shadow-sm fw-bold border-0 text-primary px-3 py-2">
+      <i class="bi" [class.bi-eye-slash-fill]="formularioVisivel" [class.bi-eye-fill]="!formularioVisivel"></i>
+      {{ formularioVisivel ? ' Ocultar Cadastro' : ' Mostrar Cadastro' }}
+    </button>
+  </header>
+
+  <div class="row g-3 pf-main-content">
+    
+    <!-- COLUNA ESQUERDA: FORMULÁRIO -->
+    <div class="col-12 col-xl-4 pf-column-auto" *ngIf="formularioVisivel && usuarioPerfil !== 'diretor'">
+      <div class="card glass-corporate-card p-3 border-0 shadow-sm">
+        <div class="text-start mb-2">
+          <h6 class="fw-bold text-dark m-0 d-flex align-items-center gap-2">
+            <i class="bi bi-plus-circle text-primary"></i> Nova Categoria
+          </h6>
+        </div>
+
+        <!-- Ajustado para flexbox  -->
+        <div class="btn-group-selector mb-3">
+          <button type="button" class="btn btn-outline-success" [class.active]="tipoCategoria === 'receita'" (click)="mudarAbaTipo('receita')">RECEITA</button>
+          <button type="button" class="btn btn-outline-danger" [class.active]="tipoCategoria === 'despesa'" (click)="mudarAbaTipo('despesa')">DESPESA</button>
+          <button type="button" class="btn btn-outline-dark" [class.active]="tipoCategoria === 'ambos'" (click)="mudarAbaTipo('ambos')">AMBOS</button>
+        </div>
+
+        <form (ngSubmit)="criarCategoria()">
+          <div class="mb-3 text-start">
+            <label class="form-label font-xs fw-bold text-secondary mb-1">NOME DA CATEGORIA *</label>
+            <input type="text" [(ngModel)]="categoriaForm.nome" name="nome" class="form-control form-control-custom fw-bold" placeholder="Ex: Vendas, Rendas..." required>
+          </div>
+          <button type="submit" class="btn w-100 btn-dark fw-bold py-2 text-uppercase" [disabled]="carregando || !categoriaForm.nome">
+            <span *ngIf="carregando" class="spinner-border spinner-border-sm me-1"></span>
+            Guardar
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- COLUNA DIREITA: LISTAGEM -->
+    <div [class]="(formularioVisivel && usuarioPerfil !== 'diretor') ? 'col-12 col-xl-8 pf-column' : 'col-12 pf-column'">
+      <div class="card glass-corporate-card p-2 border-0 h-100 d-flex flex-column shadow-sm">
+        
+        <div class="pf-table-dynamic-container flex-grow-1">
+          <table class="table table-hover align-middle m-0 perfect-report-table">
+            <thead class="sticky-top bg-white">
+              <tr>
+                <th style="width: 55%;">CATEGORIA FINANCEIRA</th>
+                <th style="width: 25%;">TIPO</th>
+                <th style="width: 20%;" class="text-center">ACÇÕES</th>
+              </tr>
+            </thead>
+            <tbody class="text-start">
+              <tr *ngFor="let item of categorias" class="animate-fade-row">
+                <td>
+                  <i class="bi bi-bookmark-fill text-primary me-2" style="font-size: 0.8rem;"></i>
+                  <span class="text-truncate">{{ item.nome | uppercase }}</span>
+                </td>
+                <td>
+                  <span class="badge-esfumado" [ngClass]="item.tipo">
+                    {{ item.tipo }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <div class="d-flex justify-content-center gap-1" *ngIf="usuarioPerfil !== 'diretor'">
+                    <button (click)="abrirModalEditar(item)" class="btn btn-sm btn-outline-primary border-0 py-0"><i class="bi bi-pencil-square"></i></button>
+                    <button (click)="abrirModalExcluir(item.id)" class="btn btn-sm btn-outline-danger border-0 py-0"><i class="bi bi-trash3-fill"></i></button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- RODAPÉ -->
+        <div class="d-flex justify-content-between align-items-center px-3 py-1 border-top bg-white">
+          <small class="text-muted fw-bold font-xs">TOTAL: {{ totalRegistros }}</small>
+          <div class="d-flex gap-2 align-items-center">
+            <button class="btn btn-xs btn-outline-primary px-2 py-0" [disabled]="paginaAtual === 1" (click)="mudarPagina(paginaAtual - 1)">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+            <span class="fw-bold text-dark font-xs">{{ paginaAtual }} / {{ totalPaginas }}</span>
+            <button class="btn btn-xs btn-outline-primary px-2 py-0" [disabled]="paginaAtual === totalPaginas" (click)="mudarPagina(paginaAtual + 1)">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- MODAL EDITAR -->
+  <div *ngIf="mostrarModalEditar" class="custom-center-modal-overlay">
+    <div class="custom-center-modal-card p-4">
+      <h5 class="fw-black text-primary mb-3 text-start">Editar Categoria</h5>
+      <div class="text-start">
+        <label class="form-label font-xs fw-bold text-muted">NOME DA CATEGORIA</label>
+        <input type="text" [(ngModel)]="itemParaEditar.nome" class="form-control form-control-custom fw-bold mb-3">
+        
+        <label class="form-label font-xs fw-bold text-muted">TIPO DE FLUXO</label>
+        <select [(ngModel)]="itemParaEditar.tipo" class="form-select form-control-custom fw-bold">
+          <option value="receita">Receita</option>
+          <option value="despesa">Despesa</option>
+          <option value="ambos">Ambos</option>
+        </select>
+      </div>
+      <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+        <button (click)="fecharModalEditar()" class="btn btn-sm btn-secondary fw-bold">Cancelar</button>
+        <button (click)="salvarEdicao()" class="btn btn-sm btn-primary fw-bold">Salvar Alterações</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL EXCLUIR -->
+  <div *ngIf="mostrarModalExcluir" class="custom-center-modal-overlay">
+    <div class="custom-center-modal-card text-center">
+      <i class="bi bi-exclamation-octagon text-danger fs-1"></i>
+      <h5 class="fw-black mt-2">Confirmar Eliminação?</h5>
+      <p class="text-muted font-sm">Esta ação removerá permanentemente a categoria do sistema.</p>
+      <div class="d-flex justify-content-center gap-2 mt-4">
+        <button (click)="fecharModalExcluir()" class="btn btn-light border fw-bold">Não, Cancelar</button>
+        <button (click)="confirmarExclusao()" class="btn btn-danger fw-bold">Sim, Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+</div>
