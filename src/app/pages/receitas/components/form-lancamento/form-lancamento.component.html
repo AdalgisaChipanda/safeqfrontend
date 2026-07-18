@@ -136,81 +136,55 @@
   }
 </style>
 
-<div class="erp-form-card-master" (dragstart)="$event.preventDefault()">
+<div class="erp-form-card-master">
   <form (ngSubmit)="submit()">
+    <div class="erp-form-title-dynamic">{{ isEdicao ? 'Editar' : 'Novo' }} Lançamento</div>
     
-    <div class="erp-form-title-dynamic">
-      {{ isEdicao ? 'Editar Lançamento' : 'Registrar Movimentação' }}
-    </div>
-    
-    <!-- ALTERNADOR SUPERIOR (RECEITA / DESPESA) -->
     <div class="erp-tab-toggle-container">
-      <button type="button" class="btn-toggle-erp" 
-              [class.active-receita]="tipoLancamento === 'receita'"
-              (click)="mudarAba('receita')">
-        Aporte / Receita
-      </button>
-      <button type="button" class="btn-toggle-erp" 
-              [class.active-despesa]="tipoLancamento === 'despesa'"
-              (click)="mudarAba('despesa')">
-        Saída / Despesa
-      </button>
+      <button type="button" class="btn-toggle-erp" [class.active-receita]="tipoLancamento === 'receita'" (click)="mudarAba('receita')">Receita</button>
+      <button type="button" class="btn-toggle-erp" [class.active-despesa]="tipoLancamento === 'despesa'" (click)="mudarAba('despesa')">Despesa</button>
     </div>
 
     <div class="erp-form-two-columns">
-      
-      <!-- COLUNA DA ESQUERDA -->
       <div class="erp-vertical-column">
-        <div>
-          <label class="erp-field-label">Valor (AKZ)</label>
-          <input type="number" [(ngModel)]="transacao.valor" name="valor" class="form-control erp-field-input fw-bold" required placeholder="0.00" step="0.01">
-        </div>
+        <label class="erp-field-label">Valor (AKZ)</label>
+        <input type="number" [(ngModel)]="transacao.valor" name="valor" class="erp-field-input" required>
 
-        <div>
-          <label class="erp-field-label">Entidade / Beneficiário</label>
-          <input type="text" [(ngModel)]="transacao.fornecedor" name="fornecedor" class="form-control erp-field-input" placeholder="Razão social..." required>
-        </div>
+        <label class="erp-field-label">Entidade</label>
+        <input type="text" [(ngModel)]="transacao.fornecedor" name="fornecedor" class="erp-field-input" required>
 
-        <div>
-          <label class="erp-field-label">Meio de Liquidação</label>
-          <select [(ngModel)]="transacao.forma_pagamento_id" name="forma_pagamento_id" class="form-select erp-field-input" required>
-            <option value="" disabled selected>Selecionar...</option>
-            <option *ngFor="let f of formasPagamento" [value]="f.id">{{ f.nome }}</option>
-          </select>
-        </div>
+        <label class="erp-field-label">Pagamento</label>
+        <select [(ngModel)]="transacao.forma_pagamento_id" name="forma_pagamento_id" class="erp-field-input" required>
+          <option *ngFor="let f of formasPagamento" [value]="f.id">{{ f.nome }}</option>
+        </select>
       </div>
 
-      <!-- COLUNA DA DIREITA -->
       <div class="erp-vertical-column">
-        <div>
-          <label class="erp-field-label">Data de Competência</label>
-          <input type="date" [(ngModel)]="transacao.data" name="data" class="form-control erp-field-input" required>
-        </div>
+        <label class="erp-field-label">Data</label>
+        <input type="date" [(ngModel)]="transacao.data" name="data" class="erp-field-input" required>
 
-        <div>
-          <label class="erp-field-label">Categoria de Fluxo</label>
-          <select [(ngModel)]="transacao.categoria_id" name="categoria_id" class="form-select erp-field-input" required>
-            <option value="" disabled selected>Selecionar...</option>
-            <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.nome }}</option>
-          </select>
-        </div>
+        <label class="erp-field-label">Categoria</label>
+        <select [(ngModel)]="transacao.categoria_id" name="categoria_id" class="erp-field-input" required>
+          <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.nome }}</option>
+        </select>
 
-        <div>
-          <label class="erp-field-label">Descrição / Notas</label>
-          <input type="text" [(ngModel)]="transacao.descricao" name="descricao" class="form-control erp-field-input" placeholder="Observações...">
-        </div>
+        <label class="erp-field-label">Descrição</label>
+        <input type="text" [(ngModel)]="transacao.descricao" name="descricao" class="erp-field-input" required>
       </div>
-
     </div>
 
-    <!-- BOTÕES CENTRALIZADOS NA BASE DA ESTRUTURA CINZENTA -->
     <div class="erp-action-footer-panel">
-      <button type="button" (click)="cancelar()" class="btn-sys-cancel-red">Cancelar</button>
-      <button type="submit" class="btn-sys-confirm" [disabled]="carregando">
-        <span *ngIf="carregando" class="spinner-border spinner-border-sm me-1" style="width: 12px; height: 12px;"></span>
+      <button type="button" (click)="onCancelar.emit()" class="btn-sys-cancel-red">Cancelar</button>
+      
+      <!-- TRAVA DE SEGURANÇA E VALIDAÇÃO -->
+      <button 
+        *ngIf="podeVerBotao" 
+        type="submit" 
+        class="btn-sys-confirm" 
+        [disabled]="carregando || !formularioValido"
+        [style.opacity]="!formularioValido ? '0.5' : '1'">
         Confirmar
       </button>
     </div>
-
   </form>
 </div>

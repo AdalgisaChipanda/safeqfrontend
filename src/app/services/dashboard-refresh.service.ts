@@ -1,29 +1,27 @@
 import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs';
-
+import { Subject, Observable } from 'rxjs';
 
 @Injectable({
-  providedIn:'root'
+  providedIn: 'root'
 })
-
 export class DashboardRefreshService {
 
+  private refreshSubject = new Subject<void>();
 
-private atualizar =
-new Subject<void>();
+  constructor() { }
 
+  /**
+   * chama sempre que uma ação 
+   * (Criar, Editar, Eliminar) 
+   */
+  triggerRefresh(): void {
+    this.refreshSubject.next();
+  }
 
-
-refresh$ =
-this.atualizar.asObservable();
-
-
-
-atualizarDashboard(){
-
-this.atualizar.next();
-
-}
-
-
+  /**
+   * O Dashboard ficará "escutando" este Observable.
+   */
+  get onRefresh(): Observable<void> {
+    return this.refreshSubject.asObservable();
+  }
 }

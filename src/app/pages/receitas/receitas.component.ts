@@ -5,6 +5,7 @@ import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
+// Importação dos sub components
 import { FiltrosLancamentoComponent } from './components/filtros-lancamento/filtros-lancamento.component';
 import { TabelaLancamentoComponent } from './components/tabela-lancamento/tabela-lancamento.component';
 import { FormLancamentoComponent } from './components/form-lancamento/form-lancamento.component';
@@ -20,7 +21,7 @@ export class ReceitasComponent implements OnInit, OnDestroy {
   private apiUrl = 'http://localhost:8000/api';
   private searchSubject = new Subject<string>();
 
-  // Dados e Listagens
+  // Estados de Dados
   transacao: any = { valor: null, data: '', categoria_id: '', forma_pagamento_id: '', fornecedor: '', descricao: '' };
   itemParaEditar: any = {};
   historicoFiltrado: any[] = [];
@@ -33,7 +34,7 @@ export class ReceitasComponent implements OnInit, OnDestroy {
   tipoLancamento: 'receita' | 'despesa' = 'receita';
   usuarioPerfil: string = '';
 
-  // Toasts
+  // Toasts / Alertas
   exibirToast: boolean = false;
   mensagemToast: string = '';
   tipoToast: 'sucesso' | 'erro' = 'sucesso';
@@ -51,13 +52,40 @@ export class ReceitasComponent implements OnInit, OnDestroy {
 
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
+  // ==========================================
+  // LÓGICA DE PERMISSÃO (CORRIGIDA)
+  // ==========================================
+  get podeVerBotao(): boolean {
+    // Se o perfil ainda não carregou, permite (para não bloquear Admin/Gestor no load)
+    if (!this.usuarioPerfil) return true;
+
+    const role = this.usuarioPerfil.toLowerCase().trim();
+    
+    // BLOQUEIA APENAS se for Diretor Geral. Se for "Admin", "Gestor", etc, retorna TRUE.
+    if (role === 'diretor geral' || role === 'diretor') {
+      return false;
+    }
+    return true;
+  }
+
   ngOnInit(): void {
+    // Captura o usuário do LocalStorage
     const user = localStorage.getItem('safeq_user');
-    this.usuarioPerfil = user ? JSON.parse(user).role : '';
+    if (user) {
+      try {
+        const userObj = JSON.parse(user);
+        this.usuarioPerfil = userObj.role || userObj.perfil || '';
+        console.log("Perfil detectado no TS:", this.usuarioPerfil);
+      } catch (e) {
+        console.error("Erro ao ler safeq_user", e);
+      }
+    }
+
     this.resetarFormulario();
     this.carregarParametros();
     this.carregarHistorico();
 
+    // Debounce na pesquisa
     this.searchSubject.pipe(debounceTime(500), distinctUntilChanged()).subscribe(texto => {
       this.filtrosAtivos.search = texto;
       this.paginaAtual = 1;
@@ -65,19 +93,26 @@ export class ReceitasComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy(): void { this.searchSubject.complete(); }
+  ngOnDestroy(): void {
+    this.searchSubject.complete();
+  }
 
+  // SISTEMA DE ALERTAS (NOTIFY)
   private notify(msg: string, type: 'sucesso' | 'erro') {
-    this.mensagemToast = msg; this.tipoToast = type; this.exibirToast = true;
-    this.cdr.detectChanges();
-    setTimeout(() => { this.exibirToast = false; this.cdr.detectChanges(); }, 4000);
+    this.mensagemToast = msg;
+    this.tipoToast = type;
+    this.exibirToast = true;
+    this.cdr.detectChanges(); 
+    setTimeout(() => {
+      this.exibirToast = false;
+      this.cdr.detectChanges();
+    }, 4000);
   }
 
   carregarHistorico(): void {
     this.carregandoTabela = true;
     this.cdr.detectChanges();
 
-    // LIMITADOR RIGOROSO
     const params = new HttpParams()
       .set('page', this.paginaAtual.toString())
       .set('per_page', '11')
@@ -107,24 +142,22 @@ export class ReceitasComponent implements OnInit, OnDestroy {
   }
 
   mudarPagina(p: number): void {
-    if (p < 1 || p > this.totalPaginas || p === this.paginaAtual) {
-      return;
-    }
+    if (p < 1 || p > this.totalPaginas || p === this.paginaAtual) return;
     this.paginaAtual = p;
     this.carregarHistorico();
   }
 
-  // --- OPERAÇÕES CRUD ---
+  // ==========================================
+  // OPERAÇÕES CRUD
+  // ==========================================
+
   salvarNovoLancamento(): void {
-    if (this.carregando) return;
+    if (this.carregando || !this.podeVerBotao) return;
     this.carregando = true;
 
     const endpoint = this.tipoLancamento === 'receita' ? 'receitas' : 'despesas';
-    const payload = { ...this.transacao };
-    if (!payload.fornecedor) delete payload.fornecedor;
-    if (!payload.descricao) delete payload.descricao;
-
-    this.http.post(`${this.apiUrl}/${endpoint}`, payload, { headers: this.obterHeaders() }).subscribe({
+    
+    this.http.post(`${this.apiUrl}/${endpoint}`, this.transacao, { headers: this.obterHeaders() }).subscribe({
       next: () => {
         this.carregando = false;
         this.notify('Lançamento guardado com sucesso!', 'sucesso');
@@ -133,11 +166,8 @@ export class ReceitasComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.carregando = false;
-        let msg = 'Erro no servidor (500).';
-        if (err.status === 422 && err.error?.errors) {
-          const erros: any = Object.values(err.error.errors);
-          msg = erros[0][0];
-        }
+        let msg = 'Erro ao salvar lançamento.';
+        if (err.status === 422) msg = 'Preencha todos os campos corretamente.';
         this.notify(msg, 'erro');
         this.cdr.detectChanges();
       }
@@ -145,8 +175,10 @@ export class ReceitasComponent implements OnInit, OnDestroy {
   }
 
   salvarEdicao(): void {
+    if (this.carregando || !this.podeVerBotao) return;
     this.carregando = true;
     const endpoint = this.itemParaEditar.tipo === 'receita' ? 'receitas' : 'despesas';
+
     this.http.put(`${this.apiUrl}/${endpoint}/${this.itemParaEditar.id}`, this.itemParaEditar, { headers: this.obterHeaders() }).subscribe({
       next: () => {
         this.carregando = false;
@@ -154,60 +186,92 @@ export class ReceitasComponent implements OnInit, OnDestroy {
         this.fecharModalEditar();
         this.carregarHistorico();
       },
-      error: () => { 
-        this.carregando = false; 
-        this.notify('Erro ao atualizar.', 'erro'); 
-        this.cdr.detectChanges(); 
+      error: () => {
+        this.carregando = false;
+        this.notify('Erro ao atualizar registro.', 'erro');
+        this.cdr.detectChanges();
       }
     });
   }
 
   confirmarExclusao(): void {
+    if (!this.podeVerBotao) return;
     const endpoint = this.itemParaEditar.tipo === 'receita' ? 'receitas' : 'despesas';
+
     this.http.delete(`${this.apiUrl}/${endpoint}/${this.itemParaEditar.id}`, { headers: this.obterHeaders() }).subscribe({
       next: () => {
         this.notify('Removido com sucesso!', 'sucesso');
         this.fecharModalExcluir();
         this.carregarHistorico();
       },
-      error: () => { 
-        this.notify('Erro ao excluir registro.', 'erro'); 
-        this.cdr.detectChanges(); 
+      error: () => {
+        this.notify('Erro ao excluir registro.', 'erro');
+        this.cdr.detectChanges();
       }
     });
   }
 
-  // --- MODAIS ---
-  abrirModalCriar() { this.resetarFormulario(); this.mostrarModalCriar = true; this.cdr.detectChanges(); }
-  fecharModalCriar() { this.mostrarModalCriar = false; this.cdr.detectChanges(); }
+  // ==========================================
+  // CONTROLE DE MODAIS 
+  // ==========================================
+
+  abrirModalCriar() {
+    if (!this.podeVerBotao) return;
+    this.resetarFormulario();
+    this.mostrarModalCriar = true;
+    this.cdr.detectChanges(); 
+  }
+
+  fecharModalCriar() {
+    this.mostrarModalCriar = false;
+    this.cdr.detectChanges();
+  }
 
   abrirModalEditar(item: any) {
+    if (!this.podeVerBotao) return;
+    // Clona o item para não editar diretamente na tabela
     this.itemParaEditar = JSON.parse(JSON.stringify(item));
     this.itemParaEditar.categoria_id = item.categoria?.id || item.categoria_id;
     this.itemParaEditar.forma_pagamento_id = item.forma_pagamento?.id || item.forma_pagamento_id;
+    
     this.mostrarModalEditar = true;
-    this.cdr.detectChanges();
-  }
-  fecharModalEditar() { this.mostrarModalEditar = false; this.cdr.detectChanges(); }
-
-  abrirModalExcluir(item: any) { 
-    this.itemParaEditar = item; 
-    this.mostrarModalExcluir = true; 
     this.cdr.detectChanges(); 
   }
-  fecharModalExcluir() { this.mostrarModalExcluir = false; this.cdr.detectChanges(); }
 
-  // --- AUXILIARES ---
-  onSearch(texto: string) { this.searchSubject.next(texto); }
+  fecharModalEditar() {
+    this.mostrarModalEditar = false;
+    this.cdr.detectChanges();
+  }
 
-  aplicarFiltrosManuais(filtros: any) { 
-    this.filtrosAtivos = { ...this.filtrosAtivos, ...filtros }; 
-    this.paginaAtual = 1; 
-    this.carregarHistorico(); 
+  abrirModalExcluir(item: any) {
+    if (!this.podeVerBotao) return;
+    this.itemParaEditar = item;
+    this.mostrarModalExcluir = true;
+    this.cdr.detectChanges(); 
+  }
+
+  fecharModalExcluir() {
+    this.mostrarModalExcluir = false;
+    this.cdr.detectChanges();
+  }
+
+  // ==========================================
+  // AUXILIARES
+  // ==========================================
+
+  onSearch(texto: string) {
+    this.searchSubject.next(texto);
+  }
+
+  aplicarFiltrosManuais(filtros: any) {
+    this.filtrosAtivos = { ...this.filtrosAtivos, ...filtros };
+    this.paginaAtual = 1;
+    this.carregarHistorico();
   }
 
   private obterHeaders() {
-    return new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem('safeq_token')}` });
+    const token = localStorage.getItem('safeq_token');
+    return new HttpHeaders({ 'Authorization': `Bearer ${token}` });
   }
 
   private carregarParametros() {

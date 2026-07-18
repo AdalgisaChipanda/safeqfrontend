@@ -1,13 +1,13 @@
 <div class="erp-viewport-total">
   
-  <!--  FILTROS SUPERIORES -->
-  <app-filtros-lancamento 
-    [categorias]="categorias" 
-    [formasPagamento]="formasPagamento" 
-    (onSearch)="onSearch($event)" 
-    (onFiltroChange)="aplicarFiltrosManuais($event)"
-    (onNovoLancamento)="abrirModalCriar()">
-  </app-filtros-lancamento>
+<!-- Trecho corrigido do app-filtros-lancamento -->
+<app-filtros-lancamento 
+  [categorias]="categorias"
+  [formasPagamento]="formasPagamento" 
+  (onSearch)="onSearch($event)" 
+  (onFiltroChange)="aplicarFiltrosManuais($event)"
+  (onNovoLancamento)="abrirModalCriar()"> <!-- Chamada direta sem travas no HTML -->
+</app-filtros-lancamento>
 
   <!--  BARRA DE FERRAMENTAS E PAGINAÇÃO -->
   <div class="erp-toolbar-flex">
@@ -71,36 +71,34 @@
 
 <!-- ================= MODAIS DE OPERAÇÃO ================= -->
 
-<!-- MODAL CRIAR -->
+<!-- MODAL DE CRIAÇÃO -->
 <div class="custom-center-modal-overlay" *ngIf="mostrarModalCriar">
-  <div class="erp-modal-window">
-    <app-form-lancamento
-      [tipoLancamento]="tipoLancamento"
-      [transacao]="transacao"
-      [categorias]="categorias"
-      [formasPagamento]="formasPagamento"
-      [carregando]="carregando"
-      (onMudarTipo)="tipoLancamento = $event"
-      (onSalvar)="salvarNovoLancamento()"
-      (onCancelar)="fecharModalCriar()">
-    </app-form-lancamento>
-  </div>
+  <app-form-lancamento 
+    [tipoLancamento]="tipoLancamento"
+    [transacao]="transacao"
+    [categorias]="categorias"
+    [formasPagamento]="formasPagamento"
+    [carregando]="carregando"
+    [usuarioPerfil]="usuarioPerfil"
+    (onMudarTipo)="tipoLancamento = $event"
+    (onSalvar)="salvarNovoLancamento()"
+    (onCancelar)="fecharModalCriar()">
+  </app-form-lancamento>
 </div>
 
-<!-- MODAL EDITAR -->
+<!-- MODAL DE EDIÇÃO -->
 <div class="custom-center-modal-overlay" *ngIf="mostrarModalEditar">
-  <div class="erp-modal-window">
-    <app-form-lancamento
-      [tipoLancamento]="itemParaEditar.tipo"
-      [transacao]="itemParaEditar"
-      [categorias]="categorias"
-      [formasPagamento]="formasPagamento"
-      [carregando]="carregando"
-      [isEdicao]="true"
-      (onSalvar)="salvarEdicao()"
-      (onCancelar)="fecharModalEditar()">
-    </app-form-lancamento>
-  </div>
+  <app-form-lancamento 
+    [isEdicao]="true"
+    [tipoLancamento]="itemParaEditar.tipo"
+    [transacao]="itemParaEditar"
+    [categorias]="categorias"
+    [formasPagamento]="formasPagamento"
+    [carregando]="carregando"
+    [usuarioPerfil]="usuarioPerfil"
+    (onSalvar)="salvarEdicao()"
+    (onCancelar)="fecharModalEditar()">
+  </app-form-lancamento>
 </div>
 
 <!-- MODAL EXCLUIR -->
@@ -108,7 +106,8 @@
   <div class="erp-modal-window alert-critical">
     <div class="erp-modal-titlebar danger">
       <span class="erp-modal-title-text">Confirmação de Eliminação</span>
-      <button type="button" (click)="fecharModalExcluir()" class="btn-close-compact">×</button>
+      
+      <button type="button" (click)="fecharModalExcluir()" class="btn-close-compact" style="border:none; background:none; cursor:pointer;">×</button>
     </div>
     <div class="erp-modal-body-warning">
       <i class="bi bi-exclamation-octagon-fill"></i>
