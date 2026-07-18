@@ -1,30 +1,161 @@
-<section class="card glass-corporate-card p-3 border-0 mb-3 text-start shadow-sm" style="max-width: 1100px;">
-  <div class="d-flex justify-content-between align-items-center mb-2">
-    <h6 class="fw-bold text-dark m-0">Parâmetros do Relatório</h6>
-    <div class="d-flex gap-2">
-      <button (click)="onExcel.emit()" class="btn btn-success btn-sm px-3">Excel</button>
-      <button (click)="onPdf.emit()" class="btn btn-dark btn-sm px-3">PDF</button>
-    </div>
+<style>
+  /* PAINEL HORIZONTAL */
+  .erp-panel-horizontal-single {
+    background-color: #f1f3f5 !important;
+    border: 1px solid #dcdfe6 !important;
+    font-family: Arial, Helvetica, sans-serif !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 24px !important; 
+    padding: 10px 16px !important; 
+    box-sizing: border-box !important;
+  }
+
+  .erp-filter-item-block {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  .erp-label {
+    font-size: 13px !important; 
+    color: #333333 !important;
+    font-weight: bold !important;
+    white-space: nowrap !important;
+  }
+
+  .erp-input-select {
+    background-color: #ffffff !important;
+    border: 1px solid #b0b5be !important;
+    border-radius: 4px !important;
+    font-size: 12px !important; 
+    font-weight: 600 !important;
+    padding: 4px 8px !important;
+    height: 32px !important; 
+    color: #000000 !important;
+  }
+
+  .separador-data-erp {
+    font-size: 13px !important;
+    font-weight: bold !important;
+    color: #333333 !important;
+    padding: 0 10px !important; 
+    white-space: nowrap !important;
+  }
+
+  /* BOTÕES DE EXPORTAÇÃO */
+  .btn-erp-action-green {
+    background: linear-gradient(to bottom, #2ecc71 0%, #27ae60 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid #219653 !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+    padding: 5px 14px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    margin-right: 8px !important;
+    height: 32px !important;
+  }
+  .btn-erp-action-dark {
+    background: linear-gradient(to bottom, #4f5d73 0%, #2c3e50 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid #1a252f !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+    padding: 5px 14px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    height: 32px !important;
+  }
+
+  /* BLOCO DE PAGINAÇÃO */
+  .erp-pagination-container {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 4px !important;
+    margin-left: 20px !important; 
+  }
+  .btn-erp-page-arrow {
+    background-color: #ffffff !important;
+    border: 1px solid #b0b5be !important;
+    color: #333333 !important;
+    font-size: 13px !important;
+    font-weight: bold !important;
+    padding: 0px 10px !important;
+    height: 32px !important; 
+    cursor: pointer !important;
+    border-radius: 4px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .btn-erp-page-arrow:disabled {
+    opacity: 0.4 !important;
+    cursor: not-allowed !important;
+  }
+  .input-page-number-erp {
+    width: 42px !important;
+    height: 32px !important;
+    text-align: center !important;
+    font-size: 13px !important;
+    border: 1px solid #b0b5be !important;
+    font-weight: bold !important;
+    border-radius: 4px !important;
+  }
+  
+  .erp-text-counter-end {
+    font-size: 13px !important;
+    color: #475569 !important;
+    font-weight: bold !important;
+    white-space: nowrap !important;
+    margin-left: auto !important; 
+  }
+</style>
+
+<div class="erp-panel-horizontal-single">
+  
+  <!-- BOTÕES DE EXPORTAÇÃO -->
+  <div class="d-flex align-items-center">
+    <button type="button" (click)="onExcel.emit()" class="btn-erp-action-green">Excel ▾</button>
+    <button type="button" (click)="onPdf.emit()" class="btn-erp-action-dark">PDF ▾</button>
   </div>
 
-  <!-- Filtros  -->
-  <div class="row g-2 align-items-end">
-    <div class="col-12 col-md-4">
-      <label class="form-label font-xs fw-bold text-secondary mb-1">DEMONSTRATIVO</label>
-      <select [(ngModel)]="tipoDemonstrativo" (change)="atualizarFiltros()" class="form-select form-select-sm">
-        <option value="geral">Geral Comparativo</option>
-        <option value="receita">Receitas</option>
-        <option value="despesa">Despesas</option>
-      </select>
-    </div>
-    <div class="col-6 col-md-2">
-      <label class="form-label font-xs fw-bold text-secondary mb-1">INÍCIO</label>
-      <input type="date" [(ngModel)]="dataInicial" (change)="atualizarFiltros()" class="form-control form-control-sm">
-    </div>
-    <div class="col-6 col-md-2">
-      <label class="form-label font-xs fw-bold text-secondary mb-1">FIM</label>
-      <input type="date" [(ngModel)]="dataFinal" (change)="atualizarFiltros()" class="form-control form-control-sm">
-    </div>
+ <!-- SELETOR DEMONSTRATIVO -->
+  <div class="erp-filter-item-block" style="width: 280px;">
+    <span class="erp-label">Demonstrativo:</span>
+    <select [(ngModel)]="tipoDemonstrativo" (change)="atualizarFiltros()" class="form-select erp-input-select w-100">
+      <option value="geral">Geral Comparativo</option>
+      <option value="receita">Receitas</option>
+      <option value="despesa">Despesas</option>
+    </select>
   </div>
-</section>
 
+  <!-- SELETOR DE PERÍODO CRONOLÓGICO -->
+  <div class="erp-filter-item-block">
+    <span class="erp-label">Período:</span>
+    <input type="date" [(ngModel)]="dataInicial" (change)="atualizarFiltros()" class="form-control erp-input-select" style="width: 140px;">
+    <span class="separador-data-erp">até</span>
+    <input type="date" [(ngModel)]="dataFinal" (change)="atualizarFiltros()" class="form-control erp-input-select" style="width: 140px;">
+  </div>
+
+   <!-- 2CONTROLADOR DE MUDAR DE PÁGINA  -->
+  <div class="erp-pagination-container">
+    <button type="button" class="btn-erp-page-arrow" [disabled]="paginaAtual === 1" (click)="onMudarPagina.emit(1)">|‹</button>
+    <button type="button" class="btn-erp-page-arrow" [disabled]="paginaAtual === 1" (click)="onMudarPagina.emit(paginaAtual - 1)">‹</button>
+    
+    <input type="text" [value]="paginaAtual" readonly class="input-page-number-erp">
+    <span style="font-size: 13px; color: #333; font-weight: bold; margin: 0 4px;">de {{ totalPaginas }}</span>
+    
+    <button type="button" class="btn-erp-page-arrow" [disabled]="paginaAtual === totalPaginas" (click)="onMudarPagina.emit(paginaAtual + 1)">›</button>
+    <button type="button" class="btn-erp-page-arrow" [disabled]="paginaAtual === totalPaginas" (click)="onMudarPagina.emit(totalPaginas)">›|</button>
+  </div>
+
+  <!-- CONTADOR FINAL -->
+  <span class="erp-text-counter-end">Total: {{ totalRegistos }} lançamentos</span>
+
+</div>

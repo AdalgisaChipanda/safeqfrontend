@@ -1,49 +1,58 @@
-<div class="dashboard-root-container d-flex vh-100" [class.sidebar-collapsed]="sidebarRecolhida">
+<div class="safeq-app-wrapper" [class.sidebar-active]="sidebarAberta">
   
-  <!-- BOTÃO HAMBÚRGUER FLUTUANTE -->
-  <button *ngIf="mostrarMenu()" type="button" (click)="alternarSidebar()" class="btn btn-hamburger-floating rounded-circle d-flex align-items-center justify-content-center">
-    <i class="bi" [class.bi-list]="!sidebarRecolhida" [class.bi-chevron-right]="sidebarRecolhida"></i>
-  </button>
+  @if (mostrarMenu()) {
+    <!-- BOTÃO -->
+    <button type="button" (click)="alternarSidebar()" class="btn-dots-trigger">
+      <i class="bi bi-three-dots-vertical"></i>
+    </button>
 
-  <!-- SIDEBAR NAVY PREMIUM  -->
-  <aside class="dashboard-sidebar d-flex flex-column justify-content-between p-3" *ngIf="mostrarMenu()">
-    <div class="w-100">
-      <div class="sidebar-user-header d-flex align-items-center justify-content-between pb-3 mb-4 border-bottom-translucent">
-        <div class="d-flex align-items-center gap-2 text-start profile-info-wrapper">
-          <img src="/default-avatar.png" alt="Avatar" (click)="navegarParaUsuarios()" class="profile-avatar-clickable rounded-circle">
-          <div class="d-flex flex-column profile-text-block">
-            <span class="fw-bold text-white text-truncate font-md m-0">{{ usuarioNome }}</span>
-            <span class="text-sky-light text-uppercase font-black mt-1" style="font-size: 0.65rem;">{{ usuarioPerfil }}</span>
+    <!-- ABA LATERAL -->
+    <aside class="side-drawer-clean">
+      <div class="drawer-inner">
+        
+        <!-- HEADER COM AVATAR -->
+        <div class="drawer-header">
+          <div class="avatar-box">
+            <img src="/default-avatar.png" alt="Avatar" (click)="navegarParaUsuarios()">
+          </div>
+          <div class="user-meta">
+            <span class="name">{{ usuarioNome }}</span>
+            <span class="role">{{ usuarioPerfil }}</span>
           </div>
         </div>
+
+        <!-- NAVEGAÇÃO -->
+        <nav class="drawer-nav">
+          <a class="nav-link" [routerLink]="['/dashboard']" routerLinkActive="active" (click)="alternarSidebar()">
+            <i class="bi bi-grid-1x2"></i> <span>Dashboard</span>
+          </a>
+          <a class="nav-link" [routerLink]="['/receitas']" routerLinkActive="active" (click)="alternarSidebar()">
+            <i class="bi bi-plus-circle"></i> <span>Lançamentos</span>
+          </a>
+          <a class="nav-link" [routerLink]="['/categorias']" routerLinkActive="active" (click)="alternarSidebar()">
+            <i class="bi bi-bookmark"></i> <span>Categorias</span>
+          </a>
+          <a class="nav-link" [routerLink]="['/relatorios']" routerLinkActive="active" (click)="alternarSidebar()">
+            <i class="bi bi-bar-chart-line"></i> <span>Relatórios</span>
+          </a>
+        </nav>
+
+        <!-- FOOTER -->
+        <div class="drawer-footer">
+          <button (click)="executarLogout()" class="btn-logout">
+            <i class="bi bi-power"></i>
+            <span>Encerrar Sessão</span>
+          </button>
+        </div>
       </div>
-      
-      <nav class="nav flex-column gap-2">
-        <a class="nav-link d-flex align-items-center rounded-3" [routerLink]="['/dashboard']" routerLinkActive="active">
-          <i class="bi bi-grid-1x2-fill fs-5"></i><span class="menu-label-text ms-3">Painel Geral</span>
-        </a>
-        <a class="nav-link d-flex align-items-center rounded-3" [routerLink]="['/receitas']" routerLinkActive="active">
-          <i class="bi bi-cash-stack fs-5"></i><span class="menu-label-text ms-3">Lançamentos</span>
-        </a>
-        <a class="nav-link d-flex align-items-center rounded-3" [routerLink]="['/categorias']" routerLinkActive="active">
-          <i class="bi bi-tags-fill fs-5"></i><span class="menu-label-text ms-3">Categorias</span>
-        </a>
-        <a class="nav-link d-flex align-items-center rounded-3" [routerLink]="['/relatorios']" routerLinkActive="active">
-          <i class="bi bi-file-earmark-bar-graph-fill fs-5"></i><span class="menu-label-text ms-3">Relatórios</span>
-        </a>
-      </nav>
-    </div>
-    
-    <div class="sidebar-footer-logout border-top-translucent pt-3">
-      <button type="button" (click)="executarLogout()" class="nav-link text-white-70 d-flex align-items-center border-0 bg-transparent w-100 text-start">
-        <i class="bi bi-box-arrow-left text-danger fs-5"></i><span class="menu-label-text ms-3 fw-semibold">Terminar Sessão</span>
-      </button>
-    </div>
-  </aside>
+    </aside>
 
-  <!--  VIEWPORT COM ROLAGEM  -->
-  <main class="content-viewport-layout flex-grow-1">
-    <router-outlet></router-outlet>
+    <div class="sidebar-overlay" (click)="alternarSidebar()"></div>
+  }
+
+  <main class="main-viewport">
+    <div class="content-limiter">
+      <router-outlet></router-outlet>
+    </div>
   </main>
-
 </div>

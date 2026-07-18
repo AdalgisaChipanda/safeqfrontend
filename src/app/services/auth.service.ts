@@ -1,64 +1,99 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { Observable, BehaviorSubject, throwError } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
 import { AuthResposta, Usuario } from '../models/financeiro.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8000/api';
+  // Endereço oficial do backend SAFEQ
+  private readonly baseUrl = 'http://localhost:8000/api';
+  
   private usuarioSubject = new BehaviorSubject<Usuario | null>(null);
   public usuario$ = this.usuarioSubject.asObservable();
 
   constructor(private http: HttpClient) {
-    this.carregarUsuarioSalvo();
+    this.carregarSessao();
   }
 
-  // Realiza o envio das credenciais para a rota pública de login
+  /**
+   * Executa o login no sistema
+   */
   login(credenciais: { email: string; password: string }): Observable<AuthResposta> {
-    return this.http.post<AuthResposta>(`${this.apiUrl}/login`, credenciais).pipe(
-      tap(resposta => {
-        if (resposta && resposta.token) {
-          localStorage.setItem('safeq_token', resposta.token);
-          localStorage.setItem('safeq_user', JSON.stringify(resposta.usuario));
-          this.usuarioSubject.next(resposta.usuario);
+    const headers = new HttpHeaders({
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post<AuthResposta>(`${this.baseUrl}/login`, credenciais, { headers }).pipe(
+      tap(res => {
+        if (res && res.token) {
+          this.salvarSessao(res.token, res.usuario);
         }
+      }),
+      catchError(err => {
+        console.error('Erro na comunicação com o servidor:', err);
+        return throwError(() => err);
       })
     );
   }
 
-  // Revoga o token ativo e limpa 
+  /**
+   * 
+   */
   logout(): Observable<any> {
     const headers = this.obterHeadersAutenticados();
-    return this.http.post(`${this.apiUrl}/logout`, {}, { headers }).pipe(
-      tap(() => {
-        localStorage.removeItem('safeq_token');
-        localStorage.removeItem('safeq_user');
-        this.usuarioSubject.next(null);
+    return this.http.post(`${this.baseUrl}/logout`, {}, { headers }).pipe(
+      tap(() => this.limparSessao()),
+      catchError(err => {
+        this.limparSessao(); // Limpa localmente mesmo se a rede falhar
+        return throwError(() => err);
       })
     );
   }
 
-  // Verifica
+  /**
+   * 
+   */
   estaAutenticado(): boolean {
-    return localStorage.getItem('safeq_token') !== null;
+    const token = localStorage.getItem('safeq_token');
+    return !!token;
   }
 
-  // Fornece a estrutura de cabeçalho
+  /**
+   * Gera o cabeçalho de autorização 
+   */
   obterHeadersAutenticados(): HttpHeaders {
     const token = localStorage.getItem('safeq_token');
     return new HttpHeaders({
       'Authorization': `Bearer ${token}`,
-      'Accept': 'application/json'
+      'Accept': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest'
     });
   }
 
-  private carregarUsuarioSalvo(): void {
+  private salvarSessao(token: string, usuario: Usuario): void {
+    localStorage.setItem('safeq_token', token);
+    localStorage.setItem('safeq_user', JSON.stringify(usuario));
+    this.usuarioSubject.next(usuario);
+  }
+
+  private limparSessao(): void {
+    localStorage.removeItem('safeq_token');
+    localStorage.removeItem('safeq_user');
+    this.usuarioSubject.next(null);
+  }
+
+  private carregarSessao(): void {
     const userJson = localStorage.getItem('safeq_user');
     if (userJson) {
-      this.usuarioSubject.next(JSON.parse(userJson));
+      try {
+        this.usuarioSubject.next(JSON.parse(userJson));
+      } catch {
+        this.limparSessao();
+      }
     }
   }
 }

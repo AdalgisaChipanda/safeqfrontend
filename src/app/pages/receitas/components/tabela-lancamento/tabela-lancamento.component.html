@@ -1,96 +1,129 @@
-<div class="table-container-clean">
-  <table class="table table-hover align-middle text-start m-0 perfect-report-table">
-    <thead class="table-light-custom">
+<style>
+  .fonte-moderna-tabela {
+    font-family: Arial, sans-serif !important;
+    width: 99% !important;
+  }
+  
+  .th-limpo {
+    color: #64748b !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    background-color: #f8fafc !important;
+    padding: 10px 12px !important;
+    border-bottom: 1px solid #dee2e6 !important;
+    border-right: 1px solid #dee2e6 !important;
+    white-space: nowrap !important;
+    
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+    box-shadow: inset 0 -1px 0 #dee2e6 !important;
+  }
+  .th-limpo:first-child { border-left: 1px solid #dee2e6 !important; }
+  
+  .td-data-categoria-descricao {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+    white-space: nowrap !important; 
+  }
+  
+  .tipo-receita-texto, .valor-receita-neon {
+    color: #22c55e !important;
+    font-weight: 700 !important;
+  }
+  
+  .tipo-despesa-texto, .valor-despesa-neon {
+    color: #ef4444 !important;
+    font-weight: 700 !important;
+  }
+  
+  .td-entidade-azul-claro {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    color: #38bdf8 !important;
+    white-space: nowrap !important;
+  }
+  
+  .tabela-grade-completa {
+    width: 100% !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    table-layout: auto !important; 
+  }
+  
+  .tabela-grade-completa tbody tr td {
+    padding: 8px 12px !important; 
+    border-bottom: 1px solid #dee2e6 !important;
+    border-right: 1px solid #dee2e6 !important;
+    vertical-align: middle !important;
+  }
+  .tabela-grade-completa tbody tr td:first-child { border-left: 1px solid #dee2e6 !important; }
+
+  /* ÍCONES DE AÇÃO OPERACIONAIS */
+  .btn-editar-azul {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 3px !important;
+    padding: 3px 3px !important;
+    color: #3b82f6 !important;
+  }
+  
+  .btn-excluir-vermelho {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 90px !important;
+    padding: 3px 3px !important;
+    color: #ef4444 !important;
+  }
+</style>
+
+<div class="w-100 fonte-moderna-tabela" style="overflow-y: auto; max-height: calc(100vh - 200px);">
+  <table class="table table-bordered table-hover tabela-grade-completa m-0">
+    <thead>
       <tr>
-        <th>LANÇAMENTO / DATA</th>
-        <th>CATEGORIA / CANAL</th>
-        <th>DESCRIÇÃO / ENTIDADE</th>
-        <th class="text-end">VALOR</th>
-        <th class="text-center">AÇÕES</th>
+        <th class="text-center th-limpo">DATA</th>
+        <th class="text-center th-limpo">TIPO</th>
+        <th class="th-limpo">CATEGORIA</th>
+        <th class="th-limpo">ENTIDADE</th>
+        <th class="th-limpo">DESCRIÇÃO</th>
+        <th class="text-end th-limpo">VALOR</th>
+        <th class="text-center th-limpo">ACÇÕES</th>
       </tr>
     </thead>
+    
     <tbody>
-      <tr *ngFor="let item of historico" class="animate-fade-row">
-        <!-- DATA E TIPO -->
-        <td>
-          <div class="d-flex align-items-center gap-3">
-            <div class="icon-indicator p-2 rounded-2" 
-                 [ngClass]="item.tipo === 'receita' ? 'bg-success-soft' : 'bg-danger-soft'">
-              <i class="bi" 
-                 [class.bi-graph-up-arrow]="item.tipo === 'receita'" 
-                 [class.bi-graph-down-arrow]="item.tipo === 'despesa'"></i>
-            </div>
-            <div>
-              <div class="fw-bold text-dark font-sm">{{ item.data | date:'dd/MM/yyyy' }}</div>
-              <span class="badge-esfumado mt-1" [ngClass]="item.tipo === 'receita' ? 'receita' : 'despesa'">
-                {{ item.tipo }}
-              </span>
-            </div>
-          </div>
+      <!-- LISTA DE DADOS -->
+      <tr *ngFor="let item of historico">
+        <td class="text-center td-data-categoria-descricao">{{ item.data | date:'dd/MM/yyyy' }}</td>
+        <td class="text-center td-data-categoria-descricao">
+            <span [ngClass]="item.tipo === 'receita' ? 'tipo-receita-texto' : 'tipo-despesa-texto'">
+                {{ item.tipo === 'receita' ? 'Receita' : 'Despesa' }}
+            </span>
         </td>
-
-        <!-- CATEGORIA E MEIO DE PAGAMENTO -->
-        <td>
-          <div class="fw-bold text-dark font-sm">{{ item.categoria?.nome || 'Geral' }}</div>
-          <small class="text-muted d-block font-xs">
-            <i class="bi bi-wallet2"></i> {{ item.forma_pagamento?.nome || 'N/A' }}
-          </small>
+        <td class="td-data-categoria-descricao">{{ item.categoria?.nome }}</td>
+        <td class="td-entidade-azul-claro">{{ item.fornecedor }}</td>
+        <td class="td-data-categoria-descricao">{{ item.descricao }}</td>
+        <td class="text-end td-data-categoria-descricao" [ngClass]="item.tipo === 'receita' ? 'valor-receita-neon' : 'valor-despesa-neon'">
+            {{ item.valor | number:'1.2-2' }}
         </td>
-
-        <!-- DESCRIÇÃO E ENTIDADE -->
-        <td>
-          <div class="fw-bold text-primary font-sm">{{ item.fornecedor || '---' }}</div>
-          <small class="text-muted text-truncate d-block" style="max-width: 260px;" [title]="item.descricao">
-            {{ item.descricao || 'Sem observações adicionais' }}
-          </small>
-        </td>
-
-        <!-- VALOR FORMATADO  -->
-        <td class="text-end fw-black font-sm" [ngClass]="item.tipo === 'receita' ? 'text-success' : 'text-danger'">
-          {{ item.tipo === 'receita' ? '+' : '-' }} {{ item.valor | currency:'':'':'1.0-0' }},00
-        </td>
-
-        <!-- ACÇÕES OPERACIONAIS -->
         <td class="text-center">
-          <div class="d-flex justify-content-center gap-1" *ngIf="usuarioPerfil !== 'diretor'; else readOnly">
-            <button type="button" (click)="editar(item)" class="btn btn-action-icon btn-outline-primary" title="Editar Lançamento">
-              <i class="bi bi-pencil-square"></i>
-            </button>
-            <button type="button" (click)="excluir(item)" class="btn btn-action-icon btn-outline-danger" title="Eliminar Registo">
-              <i class="bi bi-trash3-fill"></i>
-            </button>
-          </div>
-          <ng-template #readOnly>
-            <span class="badge bg-light text-muted border font-xs px-2 py-1">Auditado</span>
-          </ng-template>
+            <button (click)="editar(item)" class="btn-editar-azul"><i class="bi bi-pencil"></i></button>
+            <button (click)="excluir(item)" class="btn-excluir-vermelho ms-2"><i class="bi bi-trash"></i></button>
         </td>
       </tr>
 
-      <!-- FEEDBACK DE LISTA VAZIA -->
+      <!-- ESTADO VAZIO (LISTA BRANCA COM TEXTO) -->
       <tr *ngIf="historico.length === 0">
-        <td colspan="5" class="text-center py-5 text-muted fw-semibold">
-          <i class="bi bi-folder-x fs-2 d-block mb-2 text-secondary"></i>
-          Nenhum lançamento financeiro localizado na base analítica.
+        <td colspan="7" class="text-center bg-white" style="padding: 100px 0 !important;">
+          <div class="animate-fade-in">
+            <i class="bi bi-search text-muted" style="font-size: 3rem; opacity: 0.3;"></i>
+            <h5 class="fw-bold text-muted mt-3">Nenhum resultado localizado</h5>
+            <p class="text-muted small">Tente ajustar os filtros ou o termo de pesquisa para encontrar o que procura.</p>
+          </div>
         </td>
       </tr>
     </tbody>
   </table>
-</div>
-
-<!-- RODAPÉ DE PAGINAÇÃO  -->
-<div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3">
-  <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 1px;">
-    Mostrando {{ historico.length }} de {{ totalRegistos }} lançamentos registados
-  </small>
-  
-  <div class="d-flex gap-2">
-    <button type="button" class="btn btn-sm btn-outline-primary fw-bold px-3" 
-            [disabled]="paginaAtual === 1" (click)="mudarPagina(paginaAtual - 1)">
-      <i class="bi bi-chevron-left"></i> Anterior
-    </button>
-    <button type="button" class="btn btn-sm btn-outline-primary fw-bold px-3" 
-            [disabled]="paginaAtual === totalPaginas" (click)="mudarPagina(paginaAtual + 1)">
-      Próximo <i class="bi bi-chevron-right"></i>
-    </button>
-  </div>
 </div>

@@ -5,8 +5,7 @@ import { CommonModule } from '@angular/common';
   selector: 'app-timbre-relatorio',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './timbre-relatorio.component.html',
-  styleUrls: ['../../relatorios.component.scss']
+  templateUrl: './timbre-relatorio.component.html'
 })
 export class TimbreRelatorioComponent {
   @Input() usuarioPerfil!: string;

@@ -1,124 +1,95 @@
-<div class="login-ocean-wrapper d-flex justify-content-center align-items-center vh-100">
+<div class="login-lock-viewport">
   
-  <!-- CONTAINER EXPANDIDO NA HORIZONTAL E INTEGRADO AO FUNDO -->
-  <div class="login-flat-container container-fluid animate-fade">
+  <!-- IMAGEM DE FUNDO FIXA -->
+  <div class="bg-fixed-layer"></div>
+
+  <!-- ALERTAS DE SEGURANÇA GLOBAIS -->
+  @if (mensagemErro) {
+    <div class="custom-notification error animate-fade-in">
+      <i class="bi bi-shield-exclamation-fill"></i>
+      <span>{{ mensagemErro }}</span>
+    </div>
+  }
+
+  @if (mensagemSucesso) {
+    <div class="custom-notification success animate-fade-in">
+      <i class="bi bi-check-circle-fill"></i>
+      <span>{{ mensagemSucesso }}</span>
+    </div>
+  }
+
+  <!-- BOTÃO VOLTAR -->
+  <a routerLink="/" class="btn-back-home">
+    <i class="bi bi-arrow-left-circle-fill"></i>
+    <span>Portal Público</span>
+  </a>
+
+  <!-- PAINEL CENTRAL -->
+  <div class="central-auth-card">
     
-    <!-- IDENTIDADE DO PORTAL SEGURO  -->
-    <div class="text-center mb-5">
-      <div class="brand-header-login d-flex align-items-center justify-content-center gap-2 mb-1">
-      
-        <h3 class="fw-black brand-title-portal m-0 text-white">SAFEQ Angola</h3>
-      </div>
-      <p class="text-white-70 small m-0 fw-semibold">Análise Financeira • Portal Restrito</p>
+    <!-- CABEÇALHO CENTRALIZADO -->
+    <div class="hero-header-section">
+      <h1 class="hero-title-combined">SISTEMA DE ANÁLISE FINANCEIRO</h1>
+      <p class="hero-subtitle">Introduza os dados de acesso corporativo</p>
     </div>
 
-    <!-- ALERTA TEMPORÁRIO INTELIGENTE -->
-    <div *ngIf="mensagemErro" class="alert custom-corporate-alert d-flex align-items-center gap-2 mb-4" role="alert">
-      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
-      <div class="small fw-bold">{{ mensagemErro }}</div>
-    </div>
-
-    <!-- DIVISÃO REORGANIZADA EM DUAS COLUNAS LADO A LADO -->
-    <div class="row g-5 align-items-start m-0">
+    <div class="auth-split-layout">
       
-      <!-- COLUNA ESQUERDA: FORMULÁRIO DE LOGIN -->
-      <div class="col-12 col-md-6 form-column-side border-end-desktop pe-md-5">
+      <!-- LADO ESQUERDO: FORMULÁRIO -->
+      <div class="form-side">
         <form (ngSubmit)="executarAutenticacao()">
-          
-          <!-- Entrada: E-mail -->
-          <div class="mb-3 text-start">
-            <label for="email" class="form-label small-label fw-bold text-white">E-mail Corporativo</label>
-            <div class="input-group-custom">
-              <span class="input-icon-box"><i class="bi bi-envelope-fill"></i></span>
-              <input 
-                type="email" 
-                id="email" 
-                name="email"
-                class="form-control-custom" 
-                placeholder="utilizador@safeq.ao"
-                [(ngModel)]="credenciais.email"
-                [disabled]="carregando"
-                required>
+          <div class="mb-4">
+            <label class="label-premium">E-mail Corporativo</label>
+            <div class="input-glass-box">
+              <i class="bi bi-envelope-at"></i>
+              <input type="email" [(ngModel)]="credenciais.email" name="email" placeholder="utilizador@safeq.ao" required>
             </div>
           </div>
 
-          <!-- Entrada: Palavra-passe -->
-          <div class="mb-4 text-start">
-            <label for="password" class="form-label small-label fw-bold text-white">Palavra-passe</label>
-            <div class="input-group-custom">
-              <span class="input-icon-box"><i class="bi bi-shield-lock-fill"></i></span>
-              <input 
-                type="password" 
-                id="password" 
-                name="password"
-                class="form-control-custom" 
-                placeholder="••••••••••••"
-                [(ngModel)]="credenciais.password"
-                [disabled]="carregando"
-                required>
+          <div class="mb-4">
+            <label class="label-premium">Palavra-passe</label>
+            <div class="input-glass-box">
+              <i class="bi bi-shield-lock"></i>
+              <input type="password" [(ngModel)]="credenciais.password" name="password" placeholder="••••••••••••" required>
             </div>
           </div>
 
-          <!-- Botão de Entrada -->
-          <button 
-            type="submit" 
-            class="btn btn-login-action w-100 fw-bold d-flex justify-content-center align-items-center"
-            [disabled]="carregando">
-            <span *ngIf="carregando" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-            {{ carregando ? 'A autenticar...' : 'Iniciar Sessão' }}
+          <button type="submit" class="btn-submit-premium" [disabled]="carregando">
+            @if (!carregando) {
+              <span>Entrar no Sistema</span>
+            } @else {
+              <div class="spinner-border spinner-border-sm"></div>
+            }
           </button>
         </form>
       </div>
 
-      <!-- COLUNA DIREITA: ACESSO DE DEMONSTRAÇÃO CIRCULADO -->
-      <div class="col-12 col-md-6 demo-column-side ps-md-5">
-        <div class="demo-access-block">
-          <div class="small text-white-70 fw-bold text-start text-uppercase tracking-wider mb-3" style="font-size: 0.72rem; letter-spacing: 0.5px;">
-            <i class="bi bi-person-badge me-1"></i> Acesso Rápido de Demonstração
-          </div>
-          <div class="d-flex flex-column gap-2">
-            
-            <!-- Admin -->
-            <div (click)="preencherCamposDemo('admin@safeq.ao', '12345678')" class="demo-badge-row d-flex justify-content-between align-items-center p-2 rounded-3">
-              <div class="d-flex flex-column text-start">
-                <span class="fw-bold small text-white">Administrador</span>
-                <span class="text-white-50 expression-email">admin&#64;safeq.ao</span>
-              </div>
-              <span class="badge bg-admin-soft text-admin">ADMIN</span>
-            </div>
+      <!-- DIVISOR -->
+      <div class="auth-divider"></div>
 
-            <!-- Gestor -->
-            <div (click)="preencherCamposDemo('gestor@safeq.ao', '12345678')" class="demo-badge-row d-flex justify-content-between align-items-center p-2 rounded-3">
-              <div class="d-flex flex-column text-start">
-                <span class="fw-bold small text-white">Gestor Financeiro</span>
-                <span class="text-white-50 expression-email">gestor&#64;safeq.ao</span>
-              </div>
-              <span class="badge bg-gestor-soft text-gestor">GESTOR</span>
-            </div>
+      <!-- LADO DIREITO: DEMO -->
+      <div class="demo-side">
+        <p class="text-white-50 small fw-bold text-uppercase mb-3">Acesso Rápido</p>
+        
+        <div class="demo-list">
+          <button (click)="preencherCamposDemo('admin@safeq.ao', 'Safeq@Admin#2026')" class="demo-row">
+            <span class="role admin text-white">ADMIN</span>
+            <span class="hint text-white">admin@safeq.ao</span>
+          </button>
 
-            <!-- Diretor -->
-            <div (click)="preencherCamposDemo('diretor@safeq.ao', '12345678')" class="demo-badge-row d-flex justify-content-between align-items-center p-2 rounded-3">
-              <div class="d-flex flex-column text-start">
-                <span class="fw-bold small text-white">Diretor Geral</span>
-                <span class="text-white-50 expression-email">diretor&#64;safeq.ao</span>
-              </div>
-              <span class="badge bg-diretor-soft text-diretor">DIRETOR</span>
-            </div>
+          <button (click)="preencherCamposDemo('gestor@safeq.ao', 'Safeq@Gestor#2026')" class="demo-row">
+            <span class="role gestor text-white">GESTOR</span>
+            <span class="hint text-white">gestor@safeq.ao</span>
+          </button>
 
-          </div>
+          <button (click)="preencherCamposDemo('diretor@safeq.ao', 'Safeq@Diretor#2026')" class="demo-row">
+            <span class="role diretor text-white">DIRETOR</span>
+            <span class="hint text-white">diretor@safeq.ao</span>
+          </button>
         </div>
       </div>
 
     </div>
 
-    <!-- LINK DE RETORNO -->
-    <div class="text-center mt-5 border-top border-white-10 pt-3">
-      <a routerLink="/" class="link-return-welcome text-decoration-none small fw-bold">
-        <i class="bi bi-arrow-left-short fs-5 align-middle"></i> Voltar ao Portal Público
-      </a>
-    </div>
-
   </div>
 </div>
-
-

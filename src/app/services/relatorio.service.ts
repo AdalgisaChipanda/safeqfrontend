@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core'; // ✅ CORREÇÃO: Importado de @angular/core
+import { Injectable } from '@angular/core'; 
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
@@ -11,7 +11,7 @@ export class RelatorioService {
   constructor(private http: HttpClient) {}
 
   /**
-   * Obtém os dados para exibir na tabela do ecrã
+   * Obtém os dados para exibir 
    */
   obterDadosAnaliticos(tipo: string, dataInicio: string, dataFim: string): Observable<any> {
     const headers = this.obterHeadersAutenticados();
@@ -20,7 +20,7 @@ export class RelatorioService {
   }
 
   /**
-   * Descarrega o Excel enviando o Token de Autorização (Blob)
+   * Descarrega o Excel 
    */
   exportarExcel(tipo: string, dataInicio: string, dataFim: string): Observable<Blob> {
     const headers = this.obterHeadersAutenticados();
@@ -29,7 +29,7 @@ export class RelatorioService {
   }
 
   /**
-   * Descarrega o PDF enviando o Token de Autorização (Blob)
+   * Descarrega o PDF 
    */
   exportarPdf(tipo: string, dataInicio: string, dataFim: string): Observable<Blob> {
     const headers = this.obterHeadersAutenticados();

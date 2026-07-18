@@ -1,20 +1,56 @@
-<div class="row g-1 text-start">
-  <div class="col-4">
-    <div class="metric-box-compact p-1 border-start border-4 border-success bg-light">
-      <span class="text-success fw-bold" style="font-size: 0.6rem;">RECEITAS</span>
-      <h6 class="fw-black m-0" style="font-size: 0.85rem;">{{ totalReceitas | currency:'Kz' }}</h6>
-    </div>
+<style>
+  .erp-metrics-container {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 12px !important;
+    width: 100% !important;
+    padding: 8px 16px !important;
+    box-sizing: border-box !important;
+    background-color: #f8fafc !important;
+    font-family: Arial, sans-serif !important;
+  }
+  .erp-metric-box-compact {
+    flex: 1 !important;
+    background-color: #ffffff !important;
+    padding: 8px 14px !important;
+    border-radius: 4px !important;
+    border: 1px solid #cbd5e1 !important;
+  }
+  .border-start-success { border-left: 5px solid #22c55e !important; }
+  .border-start-danger { border-left: 5px solid #ef4444 !important; }
+  .border-start-primary { border-left: 5px solid #3b82f6 !important; background-color: #eff6ff !important; }
+  
+  .erp-metric-tag { 
+    font-size: 11px !important; 
+    font-weight: bold !important; 
+    color: #64748b !important;
+    letter-spacing: 0.5px;
+  }
+  .erp-metric-value { 
+    font-size: 15px !important; 
+    font-weight: bold !important; 
+    margin-top: 4px;
+  }
+  .text-success-vivid { color: #22c55e !important; }
+  .text-danger-vivid { color: #ef4444 !important; }
+  .text-primary-emphasis { color: #3b82f6 !important; }
+</style>
+
+<div class="erp-metrics-container" (dragstart)="$event.preventDefault()">
+  <div class="erp-metric-box-compact border-start-success">
+    <div class="erp-metric-tag">RECEITAS OPERACIONAIS</div>
+    <div class="erp-metric-value text-success-vivid">{{ totalReceitas | number:'1.2-2' }}</div>
   </div>
-  <div class="col-4">
-    <div class="metric-box-compact p-1 border-start border-4 border-danger bg-light">
-      <span class="text-danger fw-bold" style="font-size: 0.6rem;">DESPESAS</span>
-      <h6 class="fw-black m-0" style="font-size: 0.85rem;">{{ totalDespesas | currency:'Kz' }}</h6>
-    </div>
+
+  <div class="erp-metric-box-compact border-start-danger">
+    <div class="erp-metric-tag">DESPESAS ACUMULADAS</div>
+    <div class="erp-metric-value text-danger-vivid">{{ totalDespesas | number:'1.2-2' }}</div>
   </div>
-  <div class="col-4">
-    <div class="metric-box-compact p-1 border-start border-4 border-primary bg-primary-subtle">
-      <span class="text-primary fw-bold" style="font-size: 0.6rem;">LÍQUIDO</span>
-      <h6 class="fw-black m-0" style="font-size: 0.85rem;">{{ totalResultado | currency:'Kz' }}</h6>
+
+  <div class="erp-metric-box-compact border-start-primary">
+    <div class="erp-metric-tag">SALDO LÍQUIDO PERÍODO</div>
+    <div class="erp-metric-value" [ngClass]="totalResultado >= 0 ? 'text-success-vivid' : 'text-danger-vivid'">
+      {{ totalResultado | number:'1.2-2' }}
     </div>
   </div>
 </div>

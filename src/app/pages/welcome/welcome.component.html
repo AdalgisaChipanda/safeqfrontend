@@ -1,147 +1,119 @@
-<div class="welcome-scroll-container">
+<div class="safeq-immersive-wrapper" (dragstart)="$event.preventDefault()">
   
-  <!-- INTRODUÇÃO INSTITUCIONAL -->
-  <section class="fullscreen-slide hero-bg position-relative">
-    <div class="container-fluid h-100 p-0">
-      <div class="row g-0 h-100 m-0">
-        
-        <!-- TEXTO INSTITUCIONAL -->
-        <div class="col-12 col-lg-6 left-text-side d-flex flex-column justify-content-center px-5">
-          
-          <!-- CABEÇALHO EXPANDIDO -->
-          <div class="brand-combined-header d-flex align-items-center gap-3 mb-4">
-            <img src="/logo-safeq.png" alt="Logotipo SAFEQ" class="brand-logo-massive animate-pulse">
-            <h1 class="fw-black hero-title-combined m-0">
-              Sistema de Análise Financeira
-            </h1>
-          </div>
+  <div class="fixed-background-overlay"></div>
 
-          <span class="badge bg-soft-brand text-uppercase align-self-start px-3 py-2 rounded-pill fw-bold mb-4">
-            Módulo Avançado de Finanças
-          </span>
-          
-          <!-- TEXTO ABAIXO COM MÁXIMA VISIBILIDADE -->
-          <p class="lead text-dark-emphasis mb-4 text-description-high-contrast">
-            Plataforma corporativa integrada para controle de fluxo de caixa, monitoramento de KPIs em tempo real e emissão automatizada de relatórios gerenciais para auditoria.
-          </p>
+  <div class="scroll-content-container">
+    
+    <section class="content-slide">
+      <div class="central-block">
+        <h1 class="fw-black text-white main-title">SISTEMA DE ANÁLISE FINANCEIRO</h1>
         
+        <div class="badge-premium-long text-uppercase">
+          Módulo de Inteligência Financeira • Gestão Estratégica
         </div>
+        
+        <p class="description-text">
+          Plataforma corporativa integrada para controle de fluxo de caixa. <br>
+          Auditoria digital para o mercado angolano.
+        </p>
 
-        <!-- METADE DIREITA: IMAGEM INSTITUCIONAL COMPLETA E BOTÃO PRESO -->
-        <div class="col-12 col-lg-6 right-image-side position-relative">
-          <img src="/esta.png" alt="SAFEQ Corporate Finance" class="hero-image-full">
-          <a routerLink="/login" class="btn btn-floating-restrict shadow-md fw-bold px-4 py-2 rounded-pill">
-            <i class="bi bi-shield-lock-fill me-1"></i> Área Restrita
+        <!-- Texto clicável -->
+        <div class="mt-4">
+          <a routerLink="/login" class="hero-link-text">
+            <i class="bi bi-shield-lock-fill me-2"></i> Aceder à Área Restrita
           </a>
         </div>
-
       </div>
-    </div>
-
-    <div class="scroll-indicator position-absolute bottom-0 start-50 translate-middle-x mb-4 text-center">
-      <small class="text-muted d-block mb-1 fw-medium">Rolar para explorar</small>
-      <i class="bi bi-chevron-down text-muted animate-bounce"></i>
-    </div>
-  </section>
-
-  <!-- OS CARTÕES  -->
-  <section class="fullscreen-slide bg-white d-flex flex-column justify-content-center align-items-center overflow-hidden">
-    <div class="text-center mb-5">
-      <h2 class="fw-black text-dark-blue-light m-0 fs-1">Funcionalidades do Ecossistema</h2>
-      <p class="text-muted small mt-2">Clique sobre qualquer cartão para travar ou destravar o movimento</p>
-    </div>
-
-    <div class="w-100 container-marquee-rows d-flex flex-column gap-4" [class.paused]="esteiraPausada">
       
-      <!-- LINHA 1 EM MOVIMENTO -->
-      <div class="marquee-row-track track-left">
-        <div class="marquee-row-group d-flex gap-4">
-          <div (click)="alternarPausaEsteira()" class="card feature-grid-card p-4 border-0 rounded-3 shadow-sm">
-            <div class="icon-circle mb-3"><i class="bi bi-speedometer2 fs-4"></i></div>
-            <h5 class="fw-bold text-dark">Dashboard de KPIs</h5>
-            <p class="text-muted small m-0">Acompanhamento centralizado de receitas, despesas operacionais e cálculo de lucro líquido do período corporativo.</p>
-          </div>
-          <div (click)="alternarPausaEsteira()" class="card feature-grid-card p-4 border-0 rounded-3 shadow-sm">
-            <div class="icon-circle mb-3"><i class="bi bi-file-earmark-bar-graph fs-4"></i></div>
-            <h5 class="fw-bold text-dark">Relatórios Nativos</h5>
-            <p class="text-muted small m-0">Exportação instantânea de demonstrativos de fluxo de caixa nos formatos nativos PDF e planilhas Excel.</p>
-          </div>
+      <div class="scroll-hint">
+        <i class="bi bi-chevron-down animate-bounce"></i>
+      </div>
+    </section>
+
+    <section class="content-slide">
+      <div class="central-block">
+        <div class="header-section-func">
+          <h2 class="title-funcionalidades fw-black">Funcionalidades</h2>
+          <p class="subtitle-funcionalidades">Tecnologia de precisão para análise e controle de alto impacto</p>
         </div>
-        <div class="marquee-row-group d-flex gap-4" aria-hidden="true">
-          <div (click)="alternarPausaEsteira()" class="card feature-grid-card p-4 border-0 rounded-3 shadow-sm">
-            <div class="icon-circle mb-3"><i class="bi bi-speedometer2 fs-4"></i></div>
-            <h5 class="fw-bold text-dark">Dashboard de KPIs</h5>
-            <p class="text-muted small m-0">Acompanhamento centralizado de receitas, despesas operacionais e cálculo de lucro líquido del período corporativo.</p>
+
+        <div class="features-grid">
+          <div class="glass-card">
+            <div class="card-icon"><i class="bi bi-speedometer2"></i></div>
+            <div class="card-body">
+              <h5 class="card-title-sync">Dashboard de KPIs</h5>
+              <ul class="points">
+                <li><i class="bi bi-check-circle-fill"></i> Monitoramento em tempo real</li>
+                <li><i class="bi bi-check-circle-fill"></i> Controle de despesas</li>
+                <li><i class="bi bi-check-circle-fill"></i> Lucro líquido</li>
+              </ul>
+            </div>
           </div>
-          <div (click)="alternarPausaEsteira()" class="card feature-grid-card p-4 border-0 rounded-3 shadow-sm">
-            <div class="icon-circle mb-3"><i class="bi bi-file-earmark-bar-graph fs-4"></i></div>
-            <h5 class="fw-bold text-dark">Relatórios Nativos</h5>
-            <p class="text-muted small m-0">Exportação instantânea de demonstrativos de fluxo de caixa nos formatos nativos PDF e planilhas Excel.</p>
+
+          <div class="glass-card">
+            <div class="card-icon"><i class="bi bi-file-earmark-bar-graph"></i></div>
+            <div class="card-body">
+              <h5 class="card-title-sync">Relatórios Nativos</h5>
+              <ul class="points">
+                <li><i class="bi bi-check-circle-fill"></i> Exportação para PDF</li>
+                <li><i class="bi bi-check-circle-fill"></i> Planilhas Excel</li>
+                <li><i class="bi bi-check-circle-fill"></i> Demonstrativos</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <div class="card-icon"><i class="bi bi-shield-check"></i></div>
+            <div class="card-body">
+              <h5 class="card-title-sync">Segurança Sanctum</h5>
+              <ul class="points">
+                <li><i class="bi bi-check-circle-fill"></i> Controle por perfil</li>
+                <li><i class="bi bi-check-circle-fill"></i> Criptografia ativa</li>
+                <li><i class="bi bi-check-circle-fill"></i> Proteção SQL</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <div class="card-icon"><i class="bi bi-layers"></i></div>
+            <div class="card-body">
+              <h5 class="card-title-sync">Módulos CRUD</h5>
+              <ul class="points">
+                <li><i class="bi bi-check-circle-fill"></i> Gestão de lançamentos</li>
+                <li><i class="bi bi-check-circle-fill"></i> Categorias</li>
+                <li><i class="bi bi-check-circle-fill"></i> Pagamentos</li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
+    </section>
 
-      <!-- LINHA 2 EM MOVIMENTO -->
-      <div class="marquee-row-track track-right">
-        <div class="marquee-row-group d-flex gap-4">
-          <div (click)="alternarPausaEsteira()" class="card feature-grid-card p-4 border-0 rounded-3 shadow-sm">
-            <div class="icon-circle mb-3"><i class="bi bi-shield-check fs-4"></i></div>
-            <h5 class="fw-bold text-dark">Segurança Sanctum</h5>
-            <p class="text-muted small m-0">Controle rígido e granular de acessos baseado em perfis administrativos com chaves de criptografia ativa.</p>
-          </div>
-          <div (click)="alternarPausaEsteira()" class="card feature-grid-card p-4 border-0 rounded-3 shadow-sm">
-            <div class="icon-circle mb-3"><i class="bi bi-layers fs-4"></i></div>
-            <h5 class="fw-bold text-dark">Módulos CRUD</h5>
-            <p class="text-muted small m-0">Gestão completa de receitas, despesas operacionais, categorias parametrizadas e formas de pagamento.</p>
-          </div>
+    <footer class="content-slide">
+      <div class="footer-full-width">
+        <div class="footer-brand mb-4">
+          <p class="small-text-white">Produzido para SAFEQ Angola</p>
         </div>
-        <div class="marquee-row-group d-flex gap-4" aria-hidden="true">
-          <div (click)="alternarPausaEsteira()" class="card feature-grid-card p-4 border-0 rounded-3 shadow-sm">
-            <div class="icon-circle mb-3"><i class="bi bi-shield-check fs-4"></i></div>
-            <h5 class="fw-bold text-dark">Segurança Sanctum</h5>
-            <p class="text-muted small m-0">Controle rígido e granular de acessos baseado em perfis administrativos com chaves de criptografia ativa.</p>
-          </div>
-          <div (click)="alternarPausaEsteira()" class="card feature-grid-card p-4 border-0 rounded-3 shadow-sm">
-            <div class="icon-circle mb-3"><i class="bi bi-layers fs-4"></i></div>
-            <h5 class="fw-bold text-dark">Módulos CRUD</h5>
-            <p class="text-muted small m-0">Gestão completa de receitas, despesas operacionais, categorias parametrizadas e formas de pagamento.</p>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- SLIDE 3: RODAPÉ CORPORATIVO LINEAR VERTICAL  -->
-  <footer class="fullscreen-slide footer-linear-sky d-flex flex-column justify-content-center align-items-center text-center p-5">
-    <div class="container d-flex flex-column align-items-center gap-4 animate-fade">
-      
-      <!-- Marca Centralizada -->
-      <div class="footer-brand-block">
-        <h3 class="fw-black text-white m-0 tracking-tight fs-2">SAFEQ Angola</h3>
-        <p class="text-white-70 small max-w-xl mt-2 lh-base">
-          Soluções corporativas integradas focadas em otimização de processos, auditoria digital e inteligência financeira para o mercado angolano.
+        <p class="footer-text-sync">
+          Soluções corporativas integradas focadas em otimização de processos,auditoria digital e inteligência financeira para o mercado angolano.Nossa tecnologia garante transparência 
+          e agilidade na tomada de decisões estratégicas.
         </p>
+        <div class="footer-links">
+          <a routerLink="/login" class="link-item">Portal de Acesso</a>
+          <a href="#" class="link-item">Website Institucional</a>
+          <a href="#" class="link-item">Central de Suporte</a>
+        </div>
+        <div class="footer-divider-long"></div>
+        <div class="footer-bottom">
+          <p class="copyright-text">
+            © 2026 Sistema Integrado de Gestão Financeira. Todos os direitos reservados.
+          </p>
+          <div class="badge-security">
+            <i class="bi bi-shield-check me-1"></i> Canal Criptografado SSL & Sanctum
+          </div>
+        </div>
       </div>
+    </footer>
 
-      <!-- Links em Linha Única Horizontal/Vertical Organizada -->
-      <div class="footer-links-linear d-flex flex-wrap justify-content-center gap-4 my-2">
-        <a routerLink="/login" class="link-item"><i class="bi bi-shield-lock-fill"></i> Portal de Autenticação</a>
-        <a href="https://safeq-ao.ao" target="_blank" class="link-item"><i class="bi bi-globe2"></i> Website Institucional</a>
-        <a href="mailto:suporte@safeq.ao" class="link-item"><i class="bi bi-envelope-at-fill"></i> suporte&#64;safeq.ao</a>
-      </div>
-
-      <!-- Direitos Autorais e Proteção de Dados -->
-      <div class="footer-copyright border-top border-white-10 w-100 pt-4 mt-3">
-        <p class="text-white-70 small m-0 mb-2">
-          © 2026 SAFEQ Angola — Sistema Integrado de Gestão Financeira. Todos os direitos reservados.
-        </p>
-        <span class="badge bg-success-soft text-success px-3 py-2 rounded-2 small fw-semibold">
-          <i class="bi bi-shield-check me-1"></i> Canal de Comunicação Criptografado via SSL & Laravel Sanctum
-        </span>
-      </div>
-
-    </div>
-  </footer>
-
+  </div>
 </div>

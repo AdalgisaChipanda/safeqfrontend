@@ -16,13 +16,12 @@ export class UsuarioService {
     return this.http.get<any>(`${this.apiUrl}/usuarios?page=${pagina}`, { headers });
   }
 
-  //  Alinhado com a rota Route
   criar(dados: any): Observable<any> {
     const headers = this.obterHeadersAutenticados();
     return this.http.post<any>(`${this.apiUrl}/usuarios/cadastrar`, dados, { headers });
   }
 
-  // Atualização de dados do utilizador
+  // Atualização de dados 
   atualizar(id: number, dados: any): Observable<any> {
     const headers = this.obterHeadersAutenticados();
     return this.http.put<any>(`${this.apiUrl}/usuarios/${id}`, dados, { headers });
@@ -34,7 +33,6 @@ export class UsuarioService {
     return this.http.delete<any>(`${this.apiUrl}/usuarios/${id}`, { headers });
   }
 
-  // Cabeçalho com Token Sanctum do utilizador logado
   private obterHeadersAutenticados(): HttpHeaders {
     const token = localStorage.getItem('safeq_token');
     return new HttpHeaders({

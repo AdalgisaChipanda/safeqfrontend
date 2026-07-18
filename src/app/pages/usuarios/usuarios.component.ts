@@ -10,109 +10,131 @@ import { UsuarioService } from '../../services/usuario.service';
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './usuarios.component.html',
   styleUrls: ['./usuarios.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.Emulated
 })
 export class UsuariosComponent implements OnInit {
-  formularioVisivel: boolean = true;
-  carregando: boolean = false;
-  carregandoTabela: boolean = false;
-
+  // --- ESTADOS DE DADOS ---
   usuarios: any[] = [];
   usuarioForm = { nome: '', email: '', password: '', role: 'gestor' };
-
-  usuarioNome: string = '';
+  itemParaEditar: any = {};
+  
+  // --- ESTADOS DE UI ---
+  carregando: boolean = false;
+  carregandoTabela: boolean = false;
   usuarioPerfil: string = '';
 
+  // --- SISTEMA DE TOAST  ---
+  exibirToast: boolean = false;
+  mensagemToast: string = '';
+  tipoToast: 'sucesso' | 'erro' = 'sucesso';
+
+  // --- CONTROLE DE MODAIS ---
   mostrarModalEditar: boolean = false;
   mostrarModalExcluir: boolean = false;
-  itemParaEditar: any = {};
   idParaExcluir: number | null = null;
 
-  mensagemSucesso: string = '';
-  mensagemErro: string = '';
-
+  // --- PAGINAÇÃO ---
   paginaAtual: number = 1;
   totalPaginas: number = 1;
   totalRegistros: number = 0;
 
   constructor(
-    private usuarioService: UsuarioService,
+    private usuarioService: UsuarioService, 
     private cdr: ChangeDetectorRef,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.capturarSessao();
+    const dados = localStorage.getItem('safeq_user');
+    if (dados) {
+      this.usuarioPerfil = JSON.parse(dados).role;
+    }
     this.carregarUsuarios();
   }
 
-  capturarSessao(): void {
-    const dados = localStorage.getItem('safeq_user');
-    if (dados) {
-      const user = JSON.parse(dados);
-      this.usuarioPerfil = user.role;
-      this.usuarioNome = user.nome;
-    }
+  // --- MÉTODO DE NOTIFICAÇÃO  ---
+  private notify(msg: string, type: 'sucesso' | 'erro') {
+    this.mensagemToast = msg;
+    this.tipoToast = type;
+    this.exibirToast = true;
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      this.exibirToast = false;
+      this.cdr.detectChanges();
+    }, 4000);
   }
 
+  // --- CARREGAMENTO DE DADOS ---
   carregarUsuarios(): void {
     this.carregandoTabela = true;
+    this.cdr.detectChanges();
+
     this.usuarioService.listar(this.paginaAtual).subscribe({
-      next: (res) => {
-        const dados = res.dados || [];
-        // ✅ ORDENAÇÃO: IDs maiores (mais novos) primeiro
-        this.usuarios = dados.sort((a: any, b: any) => b.id - a.id);
-        
-        if (res.paginacao) {
-          this.paginaAtual = res.paginacao.pagina_atual;
-          this.totalPaginas = res.paginacao.total_paginas;
-          this.totalRegistros = res.paginacao.total_registros;
-        } else {
-          this.totalRegistros = this.usuarios.length;
+      next: (res: any) => {
+        if (res.dados) {
+          this.usuarios = res.dados.data || [];
+          this.paginaAtual = res.dados.current_page;
+          this.totalPaginas = res.dados.last_page;
+          this.totalRegistros = res.dados.total;
         }
         this.carregandoTabela = false;
         this.cdr.detectChanges();
       },
-      error: () => { this.carregandoTabela = false; this.cdr.detectChanges(); }
+      error: () => {
+        this.carregandoTabela = false;
+        this.notify('Erro ao carregar lista de utilizadores.', 'erro');
+      }
     });
   }
 
-criarUsuario(): void {
-  if (!this.usuarioForm.nome || !this.usuarioForm.email || !this.usuarioForm.password) {
-    this.mensagemErro = 'Preencha todos os campos obrigatórios.';
-    this.limparAlertas();
-    return;
+  // --- MUDANÇA DE PÁGINA ---
+  mudarPagina(p: number): void {
+    if (p < 1 || p > this.totalPaginas || p === this.paginaAtual) return;
+    this.paginaAtual = p;
+    this.carregarUsuarios();
   }
 
-  this.carregando = true; 
-  this.usuarioService.criar(this.usuarioForm).subscribe({
-    next: (res: any) => {
-      this.mensagemSucesso = res.mensagem; 
-      this.usuarioForm = { nome: '', email: '', password: '', role: 'gestor' };
-      this.carregarUsuarios(); // Recarrega a lista (o Laravel já ordena por ID DESC)
-      this.carregando = false;
-      this.limparAlertas();
-    },
-    error: (err) => { 
-      this.carregando = false;
-      // ✅ Captura a mensagem de erro específica do Laravel (ex: "Este e-mail já está em uso")
-      this.mensagemErro = err.error?.mensagem || 'Erro ao criar conta. Verifique os dados.';
-      this.limparAlertas();
+  // --- OPERAÇÕES CRUD ---
+  criarUsuario(): void {
+    if (!this.usuarioForm.nome || !this.usuarioForm.email || !this.usuarioForm.password) {
+      this.notify('Preencha os campos obrigatórios.', 'erro');
+      return;
     }
-  });
-}
+
+    this.carregando = true;
+    this.usuarioService.criar(this.usuarioForm).subscribe({
+      next: () => {
+        this.notify('Utilizador guardado com sucesso!', 'sucesso');
+        this.usuarioForm = { nome: '', email: '', password: '', role: 'gestor' };
+        this.paginaAtual = 1;
+        this.carregarUsuarios();
+        this.carregando = false;
+      },
+      error: (err) => {
+        this.carregando = false;
+        let msg = 'Erro ao registar utilizador.';
+        if (err.status === 422) {
+          const erros: any = Object.values(err.error.errors);
+          msg = erros[0][0];
+        }
+        this.notify(msg, 'erro');
+      }
+    });
+  }
 
   salvarEdicao(): void {
     this.carregando = true;
     this.usuarioService.atualizar(this.itemParaEditar.id, this.itemParaEditar).subscribe({
       next: () => {
-        this.mensagemSucesso = 'Dados atualizados!';
-        this.carregando = false;
+        this.notify('Perfil atualizado com sucesso!', 'sucesso');
         this.fecharModalEditar();
         this.carregarUsuarios();
-        this.limparAlertas();
+        this.carregando = false;
       },
-      error: () => { this.carregando = false; this.mensagemErro = 'Erro na atualização.'; this.limparAlertas(); }
+      error: () => {
+        this.carregando = false;
+        this.notify('Erro ao atualizar dados.', 'erro');
+      }
     });
   }
 
@@ -120,27 +142,38 @@ criarUsuario(): void {
     if (!this.idParaExcluir) return;
     this.usuarioService.eliminar(this.idParaExcluir).subscribe({
       next: () => {
-        this.mensagemSucesso = 'Utilizador removido.';
+        this.notify('Utilizador removido do sistema.', 'sucesso');
         this.fecharModalExcluir();
         this.carregarUsuarios();
-        this.limparAlertas();
       },
-      error: (err) => { this.mensagemErro = err.error?.mensagem; this.limparAlertas(); }
+      error: (err) => {
+        this.fecharModalExcluir();
+        const msg = err.error?.mensagem || 'Erro ao remover utilizador.';
+        this.notify(msg, 'erro');
+      }
     });
   }
 
-  // AUXILIARES
-  mudarPagina(novaPagina: number): void {
-    if (novaPagina >= 1 && novaPagina <= this.totalPaginas) {
-      this.paginaAtual = novaPagina;
-      this.carregarUsuarios();
-    }
+  abrirModalEditar(user: any) {
+    this.itemParaEditar = JSON.parse(JSON.stringify(user));
+    this.mostrarModalEditar = true;
+    this.cdr.detectChanges(); 
   }
 
-  abrirModalEditar(item: any): void { this.itemParaEditar = { ...item }; this.mostrarModalEditar = true; this.cdr.detectChanges(); }
-  fecharModalEditar(): void { this.mostrarModalEditar = false; this.cdr.detectChanges(); }
-  abrirModalExcluir(id: number): void { this.idParaExcluir = id; this.mostrarModalExcluir = true; this.cdr.detectChanges(); }
-  fecharModalExcluir(): void { this.mostrarModalExcluir = false; this.cdr.detectChanges(); }
-  alternarVisibilidadeFormulario(): void { this.formularioVisivel = !this.formularioVisivel; this.cdr.detectChanges(); }
-  private limparAlertas(): void { setTimeout(() => { this.mensagemSucesso = ''; this.mensagemErro = ''; this.cdr.detectChanges(); }, 3000); }
+  fecharModalEditar() {
+    this.mostrarModalEditar = false;
+    this.cdr.detectChanges();
+  }
+
+  abrirModalExcluir(id: number) {
+    this.idParaExcluir = id;
+    this.mostrarModalExcluir = true;
+    this.cdr.detectChanges(); 
+  }
+
+  fecharModalExcluir() {
+    this.mostrarModalExcluir = false;
+    this.idParaExcluir = null;
+    this.cdr.detectChanges();
+  }
 }

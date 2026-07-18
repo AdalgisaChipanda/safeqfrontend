@@ -1,9 +1,8 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
-import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -12,77 +11,91 @@ import { RouterModule } from '@angular/router';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent {
-  credenciais = {
-    email: '',
-    password: ''
-  };
+export class LoginComponent implements OnInit, OnDestroy {
+  
+  credenciais = { email: '', password: '' };
+  carregando: boolean = false;
+  mensagemErro: string = '';
+  mensagemSucesso: string = '';
+  
+  private alertTimeout: any = null;
 
-  carregando = false;
-  mensagemErro = '';
-  private alertaTimeout: any = null;
-
-  // Injeta o ChangeDetectorRef para garantir que a tela atualiza ao sumir o alerta
   constructor(
-    private authService: AuthService, 
+    private authService: AuthService,
     private router: Router,
     private cdr: ChangeDetectorRef
-  ) {
+  ) {}
+
+  ngOnInit(): void {
     if (this.authService.estaAutenticado()) {
       this.router.navigate(['/dashboard']);
     }
   }
 
+  ngOnDestroy(): void {
+    if (this.alertTimeout) clearTimeout(this.alertTimeout);
+  }
+
   executarAutenticacao(): void {
-    if (!this.credenciais.email || !this.credenciais.password) {
-      this.exibirAlertaTemporario('Por favor, preencha todos os campos obrigatórios.');
+    if (!this.credenciais.email.trim() || !this.credenciais.password.trim()) {
+      this.exibirAlerta('erro', 'Por favor, preencha todos os campos obrigatórios.');
       return;
     }
 
     this.carregando = true;
-    this.mensagemErro = '';
+    this.limparAlertas();
 
     this.authService.login(this.credenciais).subscribe({
       next: () => {
-        this.router.navigate(['/dashboard']);
-      },
-           error: (err) => {
+        // --- SUCESSO ---
+        this.mensagemSucesso = 'Autenticação concluída! Bem-vindo.';
         this.carregando = false;
-        // Se o Laravel rejeitar o login (401 ou 422), exibe a mensagem no Toast superior direito
-        if (err.error && err.error.mensagem) {
-          this.exibirAlertaTemporario(err.error.mensagem);
-        } else {
-          this.exibirAlertaTemporario('Credenciais incorretas. Verifique o e-mail corporativo e a palavra-passe.');
-        }
-      }
+        this.cdr.detectChanges();
 
+        setTimeout(() => {
+          this.router.navigate(['/dashboard']);
+        }, 2500); 
+      },
+      error: (err) => {
+        this.carregando = false;
+        let msg = 'E-mail ou palavra-passe incorretos.';
+        
+        if (err.status === 429) msg = 'Muitas tentativas. Aguarde 1 minuto.';
+        if (err.error && err.error.mensagem) msg = err.error.mensagem;
+
+        this.exibirAlerta('erro', msg);
+      }
     });
   }
 
   preencherCamposDemo(email: string, passe: string): void {
+    if (this.carregando) return;
     this.credenciais.email = email;
     this.credenciais.password = passe;
-    this.mensagemErro = ''; 
-    if (this.alertaTimeout) clearTimeout(this.alertaTimeout);
+    this.limparAlertas();
     this.cdr.detectChanges();
   }
 
-  /**
-   * Apresenta o alerta 
-   */
-  private exibirAlertaTemporario(mensagem: string): void {
-    this.mensagemErro = mensagem;
-    this.cdr.detectChanges(); 
+  private exibirAlerta(tipo: 'sucesso' | 'erro', texto: string): void {
+    this.limparAlertas();
     
-    if (this.alertaTimeout) {
-      clearTimeout(this.alertaTimeout);
+    if (tipo === 'sucesso') {
+      this.mensagemSucesso = texto;
+    } else {
+      this.mensagemErro = texto;
     }
 
-    // Executa a limpeza e força a atualização da tela
-    this.alertaTimeout = setTimeout(() => {
-      this.mensagemErro = '';
-      this.cdr.detectChanges(); 
-    }, 4000);
+    this.cdr.detectChanges();
+
+    if (this.alertTimeout) clearTimeout(this.alertTimeout);
+    this.alertTimeout = setTimeout(() => {
+      this.limparAlertas();
+      this.cdr.detectChanges();
+    }, 6000);
+  }
+
+  private limparAlertas(): void {
+    this.mensagemErro = '';
+    this.mensagemSucesso = '';
   }
 }
-

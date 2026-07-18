@@ -1,176 +1,136 @@
-<div class="pf-viewport-wrapper p-3 animate-fade-in">
+<div class="erp-viewport-total" (dragstart)="$event.preventDefault()">
   
-  <!-- ALERTAS DE FEEDBACK (PROFISSIONAIS E COMPACTOS) -->
-  <div *ngIf="mensagemSucesso" class="alert alert-success custom-toast" role="alert">
-    <i class="bi bi-check-circle-fill me-2"></i>{{ mensagemSucesso }}
-  </div>
-  
-  <div *ngIf="mensagemErro" class="alert alert-danger custom-toast" role="alert">
-    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ mensagemErro }}
-  </div>
-
-  <!-- CABEÇALHO COM RECUO DE SEGURANÇA PARA A ABA -->
-  <header class="d-flex justify-content-between align-items-center mb-3 pf-page-header">
-    <div class="header-title-block text-start">
-      <h4 class="fw-black m-0 text-uppercase">Gestão de Utilizadores</h4>
-      <p class="m-0 fw-bold font-xs text-primary">Controle de acessos e permissões do sistema.</p>
+  <!-- TOAST SYSTEM -->
+  <div class="safeq-toast-system" [class.active]="exibirToast" [ngClass]="tipoToast">
+    <div class="toast-icon">
+      <i class="bi" [ngClass]="tipoToast === 'sucesso' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'"></i>
     </div>
-    
-    <!-- Botão visível apenas para ADMIN -->
-    <button *ngIf="usuarioPerfil === 'admin'" (click)="alternarVisibilidadeFormulario()" 
-            class="btn btn-light shadow-sm fw-bold border-0 text-primary px-3 py-2">
-      <i class="bi" [class.bi-eye-slash-fill]="formularioVisivel" [class.bi-eye-fill]="!formularioVisivel"></i>
-      {{ formularioVisivel ? ' Ocultar Cadastro' : ' Mostrar Cadastro' }}
-    </button>
-  </header>
-
-  <div class="row g-3 pf-main-content">
-    
-    <!-- COLUNA ESQUERDA: FORMULÁRIO DE CADASTRO (APENAS ADMIN) -->
-    <div class="col-12 col-xl-4 pf-column-auto" *ngIf="formularioVisivel && usuarioPerfil === 'admin'">
-      <div class="card glass-corporate-card p-3 border-0 shadow-sm">
-        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-person-plus-fill me-2 text-primary"></i>Novo Utilizador</h6>
-        
-        <form (ngSubmit)="criarUsuario()" class="form-compact">
-          <div class="mb-2 text-start">
-            <label class="form-label font-xs fw-bold text-secondary">NOME COMPLETO *</label>
-            <input type="text" [(ngModel)]="usuarioForm.nome" name="nome" class="form-control form-control-sm fw-bold" placeholder="Ex: João Silva" required>
-          </div>
-
-          <div class="mb-2 text-start">
-            <label class="form-label font-xs fw-bold text-secondary">E-MAIL / LOGIN *</label>
-            <input type="email" [(ngModel)]="usuarioForm.email" name="email" class="form-control form-control-sm" placeholder="joao@empresa.com" required>
-          </div>
-
-          <div class="mb-2 text-start">
-            <label class="form-label font-xs fw-bold text-secondary">PALAVRA-PASSE *</label>
-            <input type="password" [(ngModel)]="usuarioForm.password" name="password" class="form-control form-control-sm" placeholder="Mínimo 8 caracteres" required>
-          </div>
-
-          <div class="mb-3 text-start">
-            <label class="form-label font-xs fw-bold text-secondary">PERFIL DE ACESSO *</label>
-            <select [(ngModel)]="usuarioForm.role" name="role" class="form-select form-select-sm" required>
-              <option value="admin">Administrador (Total)</option>
-              <option value="gestor">Gestor (Operacional)</option>
-              <option value="diretor">Diretor (Apenas Leitura)</option>
-            </select>
-          </div>
-
-          <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm text-uppercase" [disabled]="carregando">
-            <span *ngIf="carregando" class="spinner-border spinner-border-sm me-2"></span>
-            Registar Utilizador
-          </button>
-        </form>
-      </div>
+    <div class="toast-body">
+      <span class="toast-title">{{ tipoToast === 'sucesso' ? 'Sucesso' : 'Aviso do Sistema' }}</span>
+      <p class="toast-message">{{ mensagemToast }}</p>
     </div>
-
-    <!-- COLUNA DIREITA: LISTAGEM COM BARRA DE ROLAGEM ESTILIZADA -->
-    <div [class]="(formularioVisivel && usuarioPerfil === 'admin') ? 'col-12 col-xl-8 pf-column-auto' : 'col-12 pf-column-auto'">
-      <div class="card glass-corporate-card p-2 border-0 shadow-sm d-flex flex-column">
-        
-        <!-- CONTAINER DA TABELA (Altura limitada com scroll interno) -->
-        <div class="pf-table-dynamic-container overflow-auto" style="max-height: 58vh; min-height: 250px;">
-          <table class="table table-hover align-middle text-start m-0 perfect-report-table">
-            <thead class="table-light-custom sticky-top bg-white">
-              <tr>
-                <th>UTILIZADOR</th>
-                <th>E-MAIL</th>
-                <th>PERFIL</th>
-                <th class="text-center">AÇÕES</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let user of usuarios" class="animate-fade-row">
-                <td>
-                  <div class="d-flex align-items-center gap-2">
-                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 0.75rem;">
-                      {{ user.nome.charAt(0).toUpperCase() }}
-                    </div>
-                    <span class="fw-bold text-dark">{{ user.nome }}</span>
-                  </div>
-                </td>
-                <td>{{ user.email }}</td>
-                <td>
-                  <span class="badge font-xs py-1 px-2 text-uppercase" [ngClass]="{
-                    'bg-admin-soft': user.role === 'admin',
-                    'bg-gestor-soft': user.role === 'gestor',
-                    'bg-diretor-soft': user.role === 'diretor'
-                  }">{{ user.role }}</span>
-                </td>
-                <td class="text-center">
-                  <div class="d-flex justify-content-center gap-1" *ngIf="usuarioPerfil === 'admin'">
-                    <button (click)="abrirModalEditar(user)" class="btn btn-sm btn-outline-primary border-0 py-0" title="Editar"><i class="bi bi-pencil-square"></i></button>
-                    <button (click)="abrirModalExcluir(user.id)" class="btn btn-sm btn-outline-danger border-0 py-0" title="Eliminar"><i class="bi bi-trash3-fill"></i></button>
-                  </div>
-                  <span *ngIf="usuarioPerfil !== 'admin'" class="text-muted font-xs italic">Bloqueado</span>
-                </td>
-              </tr>
-              <!-- Caso a lista esteja vazia -->
-              <tr *ngIf="usuarios.length === 0">
-                <td colspan="4" class="text-center py-5 text-muted">Carregando utilizadores...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- RODAPÉ DE PAGINAÇÃO (Sempre colado na lista) -->
-        <div class="d-flex justify-content-between align-items-center px-3 py-1 border-top bg-white">
-          <small class="text-muted fw-bold font-xs">TOTAL: {{ totalRegistros }} UTILIZADORES</small>
-          <div class="d-flex gap-2 align-items-center">
-            <button class="btn btn-xs btn-outline-primary px-3" [disabled]="paginaAtual === 1" (click)="mudarPagina(paginaAtual - 1)">Anterior</button>
-            <span class="fw-bold text-dark font-xs">{{ paginaAtual }} / {{ totalPaginas }}</span>
-            <button class="btn btn-xs btn-outline-primary px-3" [disabled]="paginaAtual === totalPaginas" (click)="mudarPagina(paginaAtual + 1)">Próximo</button>
-          </div>
-        </div>
-
-      </div>
-    </div>
+    <div class="toast-progress" [class.running]="exibirToast"></div>
   </div>
 
-  <!-- MODAL DE EDIÇÃO -->
-  <div class="custom-center-modal-overlay" *ngIf="mostrarModalEditar">
-    <div class="custom-center-modal-card">
-      <h5 class="fw-black text-primary mb-3 text-start border-bottom pb-2">Editar Utilizador</h5>
-      <div class="vertical-stack-form text-start">
-        <div class="mb-2">
-          <label class="form-label font-xs fw-bold text-muted">NOME COMPLETO</label>
-          <input type="text" [(ngModel)]="itemParaEditar.nome" class="form-control form-control-custom">
+  <!-- ESTEIRA DE CADASTRO SUPERIOR -->
+  <div class="erp-panel-horizontal-single" *ngIf="usuarioPerfil === 'admin'">
+    <form (ngSubmit)="criarUsuario()" class="erp-creative-top-form">
+      <div class="erp-inputs-distributed-row">
+        <div class="erp-filter-item-block-creative">
+          <label class="erp-label-creative">Nome Completo</label>
+          <input type="text" [(ngModel)]="usuarioForm.nome" name="nome" class="erp-input-select-creative fw-bold" required>
         </div>
-        <div class="mb-2">
-          <label class="form-label font-xs fw-bold text-muted">E-MAIL</label>
-          <input type="email" [(ngModel)]="itemParaEditar.email" class="form-control form-control-custom">
+        <div class="erp-filter-item-block-creative">
+          <label class="erp-label-creative">E-mail / Login</label>
+          <input type="email" [(ngModel)]="usuarioForm.email" name="email" class="erp-input-select-creative" required>
         </div>
-        <div class="mb-2">
-          <label class="form-label font-xs fw-bold text-muted">PERFIL</label>
-          <select [(ngModel)]="itemParaEditar.role" class="form-select form-control-custom">
+        <div class="erp-filter-item-block-creative">
+          <label class="erp-label-creative">Palavra-Passe</label>
+          <input type="password" [(ngModel)]="usuarioForm.password" name="password" class="erp-input-select-creative" required>
+        </div>
+        <div class="erp-filter-item-block-creative">
+          <label class="erp-label-creative">Perfil de Acesso</label>
+          <select [(ngModel)]="usuarioForm.role" name="role" class="erp-input-select-creative fw-bold">
             <option value="admin">Administrador</option>
             <option value="gestor">Gestor</option>
             <option value="diretor">Diretor</option>
           </select>
         </div>
-        <div class="mb-2">
-          <label class="form-label font-xs fw-bold text-muted">NOVA PALAVRA-PASSE (Opcional)</label>
-          <input type="password" [(ngModel)]="itemParaEditar.password" class="form-control form-control-custom" placeholder="Deixe vazio para manter">
-        </div>
       </div>
-      <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
-        <button (click)="fecharModalEditar()" class="btn btn-sm btn-secondary fw-bold px-3">Cancelar</button>
-        <button (click)="salvarEdicao()" class="btn btn-sm btn-primary fw-bold px-3">Guardar Alterações</button>
+      <div class="erp-action-distributed-row">
+        <button type="submit" class="btn-sys-confirm-creative" [disabled]="carregando">Guardar Utilizador</button>
+        <span class="erp-text-counter-creative">Total: {{ totalRegistros }} usuários</span>
       </div>
+    </form>
+  </div>
+
+  <!-- TOOLBAR  -->
+  <div class="erp-toolbar-flex">
+    <span class="erp-label-titulo-painel">Controle de Credenciais e Auditoria</span>
+    <div class="erp-pagination-container">
+      <button type="button" class="btn-erp-page-arrow" [disabled]="paginaAtual === 1" (click)="mudarPagina(paginaAtual - 1)">‹</button>
+      <input type="text" [value]="paginaAtual" readonly class="input-page-number-erp">
+      <span class="texto-de-paginas-erp">de {{ totalPaginas }}</span>
+      <button type="button" class="btn-erp-page-arrow" [disabled]="paginaAtual === totalPaginas" (click)="mudarPagina(paginaAtual + 1)">›</button>
     </div>
   </div>
 
-  <!-- MODAL EXCLUIR -->
-  <div class="custom-center-modal-overlay" *ngIf="mostrarModalExcluir">
-    <div class="custom-center-modal-card text-center">
-      <i class="bi bi-exclamation-triangle text-danger fs-1"></i>
-      <h5 class="fw-black mt-2">Confirmar Exclusão?</h5>
-      <p class="text-muted font-sm">Esta ação removerá o acesso permanentemente.</p>
-      <div class="d-flex justify-content-center gap-2 mt-4">
-        <button (click)="fecharModalExcluir()" class="btn btn-light border fw-bold px-4">Não, Cancelar</button>
-        <button (click)="confirmarExclusao()" class="btn btn-danger fw-bold px-4">Sim, Eliminar</button>
+  <!-- TABELA -->
+  <main class="workspace-tabela-fluida">
+    <table class="table table-bordered table-hover tabela-grade-completa align-middle m-0">
+      <thead>
+        <tr>
+          <th class="th-limpo">UTILIZADOR</th>
+          <th class="th-limpo" style="width: 35%;">E-MAIL DE ACESSO</th>
+          <th class="th-limpo" style="width: 20%;">PERFIL</th>
+          <th class="text-center th-limpo" style="width: 15%;">ACÇÕES</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of usuarios">
+          <td class="td-data-categoria-descricao">
+            <i class="bi bi-person-fill text-primary me-2"></i>{{ user.nome | uppercase }}
+          </td>
+          <td class="td-data-categoria-descricao">{{ user.email }}</td>
+          <td><span class="badge-esfumado" [ngClass]="user.role">{{ user.role }}</span></td>
+          <td class="text-center">
+            <div class="d-flex justify-content-center gap-2" *ngIf="usuarioPerfil === 'admin'">
+              <button (click)="abrirModalEditar(user)" class="btn-editar-azul"><i class="bi bi-pencil-square"></i></button>
+              <button (click)="abrirModalExcluir(user.id)" class="btn-excluir-vermelho"><i class="bi bi-trash3-fill"></i></button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </main>
+</div>
+
+<!-- MODAL EDIÇÃO -->
+<div class="custom-center-modal-overlay" *ngIf="mostrarModalEditar">
+  <div class="erp-form-card-master">
+    <div class="erp-form-title-dynamic">Editar Utilizador</div>
+    <div class="erp-form-two-columns">
+      <div class="erp-vertical-column">
+        <label class="erp-field-label">Nome Completo</label>
+        <input type="text" [(ngModel)]="itemParaEditar.nome" class="form-control erp-field-input fw-bold">
+        <label class="erp-field-label mt-3">E-mail de Login</label>
+        <input type="email" [(ngModel)]="itemParaEditar.email" class="form-control erp-field-input">
+      </div>
+      <div class="erp-vertical-column">
+        <label class="erp-field-label">Perfil de Acesso</label>
+        <select [(ngModel)]="itemParaEditar.role" class="form-select erp-field-input">
+          <option value="admin">Administrador</option>
+          <option value="gestor">Gestor</option>
+          <option value="diretor">Diretor</option>
+        </select>
+        <label class="erp-field-label mt-3">Nova Senha (opcional)</label>
+        <input type="password" [(ngModel)]="itemParaEditar.password" class="form-control erp-field-input" placeholder="Manter atual">
       </div>
     </div>
+    <div class="erp-action-footer-panel">
+      <button (click)="fecharModalEditar()" class="btn-sys-cancel-red">Cancelar</button>
+      <button (click)="salvarEdicao()" class="btn-sys-confirm">Guardar</button>
+    </div>
   </div>
+</div>
 
+<!-- MODAL EXCLUSÃO  -->
+<div class="custom-center-modal-overlay" *ngIf="mostrarModalExcluir">
+  <div class="erp-modal-window-alert">
+    <div class="erp-modal-titlebar-alert">
+      <span class="erp-modal-title-text-alert">Aviso do Sistema - Confirmação de Exclusão</span>
+      <button (click)="fecharModalExcluir()" class="btn-close-compact">×</button>
+    </div>
+    <div class="erp-modal-body-content-alert">
+      <i class="bi bi-exclamation-triangle-fill text-danger fs-2"></i>
+      <div class="erp-alert-message-text">
+        <strong>Tem certeza de que deseja remover este utilizador?</strong><br>
+        Esta ação revogará permanentemente o acesso à conta e apagará os registros de permissões.
+      </div>
+    </div>
+    <div class="erp-modal-footer-actionbar-alert">
+      <button (click)="fecharModalExcluir()" class="btn-sys-action-cancel">Cancelar</button>
+      <button (click)="confirmarExclusao()" class="btn-sys-action-delete">Eliminar</button>
+    </div>
+  </div>
 </div>

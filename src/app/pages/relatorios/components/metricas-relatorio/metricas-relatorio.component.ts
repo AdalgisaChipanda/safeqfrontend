@@ -5,8 +5,7 @@ import { CommonModule } from '@angular/common';
   selector: 'app-metricas-relatorio',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './metricas-relatorio.component.html',
-  styleUrls: ['../../relatorios.component.scss']
+  templateUrl: './metricas-relatorio.component.html'
 })
 export class MetricasRelatorioComponent {
   @Input() totalReceitas: number = 0;

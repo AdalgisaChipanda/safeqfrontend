@@ -1,37 +1,114 @@
-<div class="filter-analytical-header p-2 border bg-light-translucent rounded-3 shadow-sm">
-  <!-- PESQUISA E SELETORES -->
-  <div class="d-flex flex-wrap gap-2 mb-2 align-items-center">
-    <div class="input-group input-group-sm flex-grow-1" style="max-width: 250px;">
-      <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-      <input type="text" (input)="pesquisar($event)" class="form-control font-xs" placeholder="Pesquisar...">
+<style>
+  .erp-panel-horizontal {
+    background-color: #f1f3f5 !important;
+    border: 1px solid #dcdfe6 !important;
+    font-family: Arial, Helvetica, sans-serif !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important; 
+    padding: 12px 16px !important; 
+  }
+
+  .erp-filter-row {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    width: 100% !important;
+    gap: 28px !important; 
+  }
+
+  .erp-label {
+    font-size: 13px !important; 
+    color: #2c3e50 !important;
+    font-weight: bold !important;
+    white-space: nowrap !important;
+    margin-right: 6px !important; 
+  }
+
+  .erp-input-select {
+    background-color: #ffffff !important;
+    border: 1px solid #b0b5be !important;
+    border-radius: 4px !important;
+    font-size: 13px !important; 
+    font-weight: 600 !important;
+    padding: 4px 8px !important;
+    height: 32px !important; 
+    color: #000000 !important;
+  }
+
+  .btn-erp-clear {
+    font-size: 13px !important;
+    font-weight: bold !important;
+    color: #409eff !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    white-space: nowrap !important;
+  }
+  .btn-erp-clear:hover {
+    text-decoration: underline !important;
+  }
+
+  .separador-data-erp {
+    font-size: 13px !important;
+    font-weight: bold !important;
+    color: #2c3e50 !important;
+    padding: 0 14px !important; 
+    white-space: nowrap !important;
+  }
+</style>
+
+<div class="erp-panel-horizontal" (dragstart)="$event.preventDefault()">
+  
+  <!-- LINHA: PESQUISAR -> TODOS OS TIPOS -> RECENTES -->
+  <div class="erp-filter-row">
+    <div class="d-flex align-items-center" style="width: 340px;"> 
+      <span class="erp-label">Pesquisar:</span>
+      <input type="text" [(ngModel)]="filtros.search" (input)="pesquisar($event)" class="form-control erp-input-select" placeholder="Filtrar descrição...">
     </div>
-    
-    <select [(ngModel)]="filtros.tipo" (change)="notificarMudanca()" class="form-select form-select-sm w-auto font-xs fw-bold">
-      <option value="todos">Todos</option>
-      <option value="receita">Receitas</option>
-      <option value="despesa">Despesas</option>
-    </select>
 
-    <select [(ngModel)]="filtros.categoria" (change)="notificarMudanca()" class="form-select form-select-sm w-auto font-xs">
-      <option value="todas">Categorias</option>
-      <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.nome }}</option>
-    </select>
+    <!-- Todos os Tipos -->
+    <div class="d-flex align-items-center" style="width: 220px;"> 
+      <span class="erp-label">Tipo:</span>
+      <select [(ngModel)]="filtros.tipo" (change)="notificarMudanca()" class="form-select erp-input-select">
+        <option value="todos">Todos os Tipos</option>
+        <option value="receita">Receitas</option>
+        <option value="despesa">Despesas</option>
+      </select>
+    </div>
 
-    <select [(ngModel)]="filtros.ordenacao" (change)="notificarMudanca()" class="form-select form-select-sm w-auto font-xs text-primary fw-bold">
-      <option value="recentes">Recentes</option>
-      <option value="antigos">Antigos</option>
-    </select>
+    <!-- Recentes -->
+    <div class="d-flex align-items-center" style="width: 200px;"> 
+      <span class="erp-label">Ordem:</span>
+      <select [(ngModel)]="filtros.ordenacao" (change)="notificarMudanca()" class="form-select erp-input-select">
+        <option value="recentes">Recentes</option>
+        <option value="antigos">Antigos</option>
+      </select>
+    </div>
   </div>
 
-  <!-- CALENDÁRIO COMPACTO -->
-  <div class="d-flex align-items-center gap-2 border-top pt-2">
-    <small class="fw-bold text-secondary text-uppercase font-xxs">Período:</small>
-    <input type="date" [(ngModel)]="filtros.data_inicio" (change)="notificarMudanca()" class="form-control form-control-sm w-auto py-0 px-1 font-xs">
-    <span class="font-xs">até</span>
-    <input type="date" [(ngModel)]="filtros.data_fim" (change)="notificarMudanca()" class="form-control form-control-sm w-auto py-0 px-1 font-xs">
-    
-    <button type="button" (click)="limparFiltros()" class="btn btn-link btn-sm text-danger font-xs p-0 ms-auto text-decoration-none">
-      <i class="bi bi-x-circle"></i> Limpar
-    </button>
+  <!-- LINHA: PERÍODO -> LIMPAR FILTROS -> TODAS AS CATEGORIAS -->
+  <div class="erp-filter-row style-border-top" style="border-top: 1px solid #dcdfe6; padding-top: 10px;">
+    <div class="d-flex align-items-center">
+      <span class="erp-label">Período:</span>
+      <input type="date" [(ngModel)]="filtros.data_inicio" (change)="notificarMudanca()" class="form-control erp-input-select" style="width: 145px;">
+      <span class="separador-data-erp">até</span>
+      <input type="date" [(ngModel)]="filtros.data_fim" (change)="notificarMudanca()" class="form-control erp-input-select" style="width: 145px;">
+    </div>
+
+    <!-- Limpar Filtros -->
+    <div (click)="limparFiltros()" class="btn-erp-clear">
+      Limpar Filtros
+    </div>
+
+    <!-- Todas as Categorias -->
+    <div class="d-flex align-items-center" style="width: 280px;"> 
+      <span class="erp-label">Filtrar:</span>
+      <select [(ngModel)]="filtros.categoria" (change)="notificarMudanca()" class="form-select erp-input-select">
+        <option value="todas">Todas as Categorias</option>
+        <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.nome }}</option>
+      </select>
+    </div>
   </div>
+
 </div>

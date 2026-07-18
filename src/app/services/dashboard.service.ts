@@ -11,12 +11,11 @@ export class DashboardService {
   constructor(private http: HttpClient) {}
 
   /**
-   * Obtém dados do Dashboard enviando filtros para o Backend
+   * Obtém dados do Dashboard 
    */
   obterDados(ano?: string, mes?: string): Observable<any> {
     const headers = this.obterHeadersAutenticados();
     
-    // Configura os parâmetros de consulta (?ano=X&mes=Y)
     let params = new HttpParams();
     if (ano) params = params.set('ano', ano);
     if (mes) params = params.set('mes', mes);

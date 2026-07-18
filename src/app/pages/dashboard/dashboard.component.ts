@@ -1,5 +1,5 @@
-import { Component, OnInit, AfterViewInit, ElementRef, ViewChild, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ElementRef, ViewChild, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { DashboardService } from '../../services/dashboard.service';
 import { Chart, registerables } from 'chart.js';
 
@@ -10,155 +10,233 @@ Chart.register(...registerables);
   standalone: true,
   imports: [CommonModule],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss']
+  styleUrls: ['./dashboard.component.scss'],
+  providers: [CurrencyPipe]
 })
-export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
+export class DashboardComponent implements OnInit, OnDestroy {
   @ViewChild('barChart') barChartCanvas!: ElementRef;
   @ViewChild('pieChart') pieChartCanvas!: ElementRef;
 
   private graficoEvolucao!: Chart;
   private graficoCategorias!: Chart;
-  private animLoop: any;
+  private animInterval: any;
+  private kpiInterval: any;
   
-  private cores = ['#0ea5e9', '#22c55e', '#f59e0b', '#ef4444', '#a855f7', '#06b6d4', '#6366f1'];
-  
+  hasData: boolean = false;
+  loading: boolean = true;
   secoesVisiveis: any = { 
-    evolucao: true, categorias: true, fontesReceita: true, fontesDespesa: true, meiosPagamento: true 
+    evolucao: true, categorias: true, fontesReceita: true, 
+    fontesDespesa: true, meiosPagamento: true, auditoria: true, provisionamento: true 
   };
-
-  kpis: any = { receita_total: 0, despesa_total: 0, lucro_liquido: 0, margem_rentabilidade: '0%' };
-  anos: number[] = [];
-  fontesReceita: any[] = [];
-  fontesDespesa: any[] = [];
-  meiosPagamento: any[] = [];
-  meses = [{id:1, nome:'Jan'}, {id:2, nome:'Fev'}, {id:3, nome:'Mar'}, {id:4, nome:'Abr'}, {id:5, nome:'Mai'}, {id:6, nome:'Jun'}, {id:7, nome:'Jul'}, {id:8, nome:'Ago'}, {id:9, nome:'Set'}, {id:10, nome:'Out'}, {id:11, nome:'Nov'}, {id:12, nome:'Dez'}];
   
+  dadosBrutos: any = null;
+  animatedKpis: any = { receita_total: 0, despesa_total: 0, lucro_liquido: 0, margem_rentabilidade: 0 };
+
+  anosDisponiveis: number[] = [];
+  mesesLista = [
+    {id: 1, nome: 'Janeiro'}, {id: 2, nome: 'Fevereiro'}, {id: 3, nome: 'Março'},
+    {id: 4, nome: 'Abril'}, {id: 5, nome: 'Maio'}, {id: 6, nome: 'Junho'},
+    {id: 7, nome: 'Julho'}, {id: 8, nome: 'Agosto'}, {id: 9, nome: 'Setembro'},
+    {id: 10, nome: 'Outubro'}, {id: 11, nome: 'Novembro'}, {id: 12, nome: 'Dezembro'}
+  ];
+
   anoSelecionado = new Date().getFullYear().toString();
   mesSelecionado = '';
 
   constructor(private dashboardService: DashboardService, private cdr: ChangeDetectorRef) {}
 
-  ngOnInit(): void {}
-
-  ngAfterViewInit(): void {
-    this.inicializarGraficos();
+  ngOnInit(): void {
     this.carregarDadosApi();
-    this.iniciarSequenciaAnimacao();
   }
 
   ngOnDestroy(): void {
-    if (this.animLoop) clearInterval(this.animLoop);
+    this.limparRecursos();
+  }
+
+  private limparRecursos() {
+    if (this.animInterval) clearInterval(this.animInterval);
+    if (this.kpiInterval) clearInterval(this.kpiInterval);
     if (this.graficoEvolucao) this.graficoEvolucao.destroy();
     if (this.graficoCategorias) this.graficoCategorias.destroy();
   }
 
-  private inicializarGraficos(): void {
-    if (this.barChartCanvas) {
-      this.graficoEvolucao = new Chart(this.barChartCanvas.nativeElement, {
-        type: 'bar',
-        data: { labels: [], datasets: [
-          { label: 'Receitas', data: [], backgroundColor: '#22c55e', borderRadius: 4, minBarLength: 12 },
-          { label: 'Despesas', data: [], backgroundColor: '#ef4444', borderRadius: 4, minBarLength: 12 }
-        ]},
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          // ALTERAÇÃO PARA TOQUE INDIVIDUAL:
-          interaction: {
-            mode: 'point', // Detecta apenas o ponto exato onde você toca
-            intersect: true, // Só mostra se encostar na barra
-          },
-          scales: {
-            y: { 
-              type: 'logarithmic', min: 1,
-              ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 9 } },
-              grid: { color: 'rgba(255,255,255,0.05)' }
-            },
-            x: { ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 9 } }, grid: { display: false } }
-          },
-          plugins: {
-            legend: { labels: { color: 'white', font: { size: 10 } } },
-            tooltip: {
-              enabled: true,
-              backgroundColor: 'rgba(0, 0, 0, 0.95)',
-              padding: 10,
-              displayColors: false, // Opcional: remove o quadradinho de cor para ficar mais limpo
-              callbacks: {
-                label: (context: any) => {
-                  let val = context.parsed.y;
-                  return `${context.dataset.label}: ${new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA' }).format(val)}`;
-                }
-              }
-            }
-          }
-        }
-      });
-    }
-
-    this.graficoCategorias = new Chart(this.pieChartCanvas.nativeElement, {
-      type: 'doughnut',
-      data: { labels: [], datasets: [{ data: [], backgroundColor: this.cores, borderWidth: 0 }] },
-      options: { 
-        responsive: true, maintainAspectRatio: false, cutout: '55%',
-        plugins: { legend: { position: 'right', labels: { color: 'white', font: { size: 8 }, boxWidth: 6 } } }
-      }
-    });
-  }
-
-  private iniciarSequenciaAnimacao(): void {
-    let tick = 0, pulsos = 0, fase = 'pulsar', angulo = 0;
-    this.animLoop = setInterval(() => {
-      if (!this.graficoCategorias || !this.secoesVisiveis.categorias) return;
-      if (fase === 'pulsar') {
-        tick += 0.15;
-        (this.graficoCategorias.options as any).cutout = `${55 + (Math.sin(tick) * 3.5)}%`;
-        if (tick >= Math.PI * 2) { tick = 0; pulsos++; if (pulsos >= 6) fase = 'girar'; }
-      } else {
-        angulo += 2.5;
-        (this.graficoCategorias.options as any).rotation = angulo;
-        if (angulo >= 360) { angulo = 0; pulsos = 0; fase = 'pulsar'; }
-      }
-      this.graficoCategorias.update('none');
-    }, 30);
-  }
-
   carregarDadosApi() {
+    this.loading = true;
+    this.limparRecursos();
+
     this.dashboardService.obterDados(this.anoSelecionado, this.mesSelecionado).subscribe({
       next: (res: any) => {
-        if (res?.dados) {
-          this.kpis = res.dados.kpis;
-          this.fontesReceita = res.dados.resumos.fontes_receita;
-          this.fontesDespesa = res.dados.resumos.fontes_despesa;
-          this.meiosPagamento = res.dados.resumos.meios_pagamento;
-          this.anos = res.dados.anos_disponiveis;
-          this.atualizarGraficos(res.dados.graficos);
-          this.cdr.detectChanges();
+        if (res && res.dados) {
+          this.dadosBrutos = res.dados;
+          this.anosDisponiveis = res.dados.anos_disponiveis || [new Date().getFullYear()];
+          
+          const k = res.dados.kpis;
+          this.hasData = (k.receita_total > 0 || k.despesa_total > 0 || res.dados.atividades_recentes?.length > 0);
+
+          if (this.hasData) {
+            this.animarKpis(k);
+            setTimeout(() => { 
+              this.inicializarGraficos(res.dados.graficos);
+              this.iniciarAnimacaoCicloCirculo(); 
+            }, 300);
+          }
+        }
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => { this.hasData = false; this.loading = false; this.cdr.detectChanges(); }
+    });
+  }
+
+  private animarKpis(kpis: any) {
+    let step = 0;
+    const totalSteps = 40;
+    this.kpiInterval = setInterval(() => {
+      step++;
+      const progress = step / totalSteps;
+      this.animatedKpis.receita_total = (kpis.receita_total || 0) * progress;
+      this.animatedKpis.despesa_total = (kpis.despesa_total || 0) * progress;
+      this.animatedKpis.lucro_liquido = (kpis.lucro_liquido || 0) * progress;
+      this.animatedKpis.margem_rentabilidade = ((kpis.margem_rentabilidade || 0) * progress).toFixed(1);
+
+      if (step >= totalSteps) {
+        this.animatedKpis = { ...kpis };
+        clearInterval(this.kpiInterval);
+      }
+      this.cdr.detectChanges();
+    }, 20);
+  }
+
+private inicializarGraficos(dados: any) {
+  if (this.barChartCanvas && this.secoesVisiveis.evolucao && dados?.evolucao) {
+    if (this.graficoEvolucao) this.graficoEvolucao.destroy();
+
+    const todosValores = [...dados.evolucao.receitas, ...dados.evolucao.despesas];
+    const maiorValorDoFiltro = Math.max(...todosValores, 0);
+
+    this.graficoEvolucao = new Chart(this.barChartCanvas.nativeElement, {
+      type: 'bar',
+      data: {
+        labels: dados.evolucao.labels,
+        datasets: [
+          { 
+            label: 'Receitas', 
+            data: dados.evolucao.receitas, 
+            backgroundColor: '#10b981', 
+            borderRadius: 4,
+           minBarLength:0
+          },
+          { 
+            label: 'Despesas', 
+            data: dados.evolucao.despesas, 
+            backgroundColor: '#ef4444', 
+            borderRadius: 4,
+           minBarLength:0
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { 
+          duration: 2000, 
+          easing: 'easeOutQuart' 
+        },
+        scales: {
+          y: { 
+            beginAtZero: true,
+            
+            suggestedMax: maiorValorDoFiltro > 0 ? maiorValorDoFiltro * 1.1 : 1000,
+            grid: { 
+              color: 'rgba(255,255,255,0.05)',
+              drawTicks: false
+            }, 
+            ticks: { 
+              color: '#ffffff',
+              font: { size: 10 },
+              callback: (value) => value.toLocaleString('pt-AO') // Exibe ex: 35.000
+            },
+            border: { display: false } 
+          },
+          x: { 
+            grid: { display: false }, 
+            ticks: { color: '#ffffff', font: { size: 10 } } 
+          }
+        },
+        plugins: { 
+          legend: { 
+            position: 'top',
+            labels: { color: '#ffffff', boxWidth: 12, font: { size: 11, weight: 'bold' } } 
+          } 
         }
       }
     });
   }
 
-  private atualizarGraficos(dados: any) {
-    if (this.graficoEvolucao && dados.evolucao) {
-      this.graficoEvolucao.data.labels = dados.evolucao.labels;
-      this.graficoEvolucao.data.datasets[0].data = dados.evolucao.receitas;
-      this.graficoEvolucao.data.datasets[1].data = dados.evolucao.despesas;
-      this.graficoEvolucao.update();
-    }
-    if (this.graficoCategorias && dados.categorias) {
-      this.graficoCategorias.data.labels = dados.categorias.nomes;
-      this.graficoCategorias.data.datasets[0].data = dados.categorias.valores;
-      this.graficoCategorias.update();
-    }
+  // Gráfico de Rosca 
+  if (this.pieChartCanvas && this.secoesVisiveis.categorias && dados?.categorias) {
+    if (this.graficoCategorias) this.graficoCategorias.destroy();
+    this.graficoCategorias = new Chart(this.pieChartCanvas.nativeElement, {
+      type: 'doughnut',
+      data: {
+        labels: dados.categorias.nomes,
+        datasets: [{ data: dados.categorias.valores, backgroundColor: ['#38bdf8', '#10b981', '#f59e0b', '#ef4444', '#6366f1'], borderWidth: 0 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: '75%',
+        plugins: { legend: { position: 'right', labels: { color: '#ffffff', font: { size: 9 } } } }
+      }
+    });
+  }
+}
+
+  private iniciarAnimacaoCicloCirculo() {
+    let pulses = 0; 
+    let rotations = 0;
+    let tick = 0;
+    let phase: 'pulse' | 'rotate' = 'pulse';
+
+    if (this.animInterval) clearInterval(this.animInterval);
+
+    this.animInterval = setInterval(() => {
+      if (!this.graficoCategorias) return;
+
+      if (phase === 'pulse') {
+        tick += 0.2;
+        (this.graficoCategorias.options as any).cutout = `${75 + Math.sin(tick) * 8}%`;
+        
+        if (tick >= Math.PI * 2) {
+          tick = 0;
+          pulses++;
+          if (pulses >= 6) { 
+            phase = 'rotate'; 
+            pulses = 0; 
+          }
+        }
+      } else {
+
+        (this.graficoCategorias.options as any).rotation += 5; 
+        rotations += 5;
+
+        if (rotations >= 360 * 3) { 
+          rotations = 0;
+          phase = 'pulse';
+        }
+      }
+      this.graficoCategorias.update('none');
+    }, 40);
   }
 
   fecharSecao(s: string) { 
     this.secoesVisiveis[s] = false; 
-    this.cdr.detectChanges(); 
-    setTimeout(() => { this.graficoEvolucao?.resize(); this.graficoCategorias?.resize(); }, 100); 
+    this.cdr.detectChanges();
   }
 
-  temSecoesOcultas() { return Object.values(this.secoesVisiveis).some(v => v === false); }
-  restaurarSecoes() { Object.keys(this.secoesVisiveis).forEach(k => this.secoesVisiveis[k] = true); this.carregarDadosApi(); }
+  restaurarSecoes() { 
+    Object.keys(this.secoesVisiveis).forEach(k => this.secoesVisiveis[k] = true); 
+    this.carregarDadosApi(); 
+  }
+
   onAnoChange(e: any) { this.anoSelecionado = e.target.value; this.carregarDadosApi(); }
   onMesChange(e: any) { this.mesSelecionado = e.target.value; this.carregarDadosApi(); }
 }

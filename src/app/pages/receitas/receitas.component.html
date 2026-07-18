@@ -1,103 +1,125 @@
-<div class="pf-viewport-wrapper p-3 animate-fade-in">
+<div class="erp-viewport-total">
   
-  <div *ngIf="mensagemSucesso" class="alert alert-success custom-toast" role="alert">
-    <i class="bi bi-check-circle-fill me-2"></i>{{ mensagemSucesso }}
-  </div>
+  <!--  FILTROS SUPERIORES -->
+  <app-filtros-lancamento 
+    [categorias]="categorias" 
+    [formasPagamento]="formasPagamento" 
+    (onSearch)="onSearch($event)" 
+    (onFiltroChange)="aplicarFiltrosManuais($event)"
+    (onNovoLancamento)="abrirModalCriar()">
+  </app-filtros-lancamento>
 
-  <header class="d-flex justify-content-between align-items-center mb-3 pf-page-header">
-    <div class="header-title-block text-start">
-      <h4 class="fw-black m-0 text-uppercase">Fluxo de Caixa Analítico</h4>
-      <p class="m-0 fw-bold font-xs">Gestão integrada de entradas e saídas.</p>
-    </div>
-    <button (click)="alternarVisibilidadeFormulario()" class="btn btn-light shadow-sm fw-bold border-0 text-primary px-3 py-2">
-      <i class="bi" [class.bi-eye-slash-fill]="formularioVisivel" [class.bi-eye-fill]="!formularioVisivel"></i>
-      {{ formularioVisivel ? ' Ocultar Cadastro' : ' Mostrar Cadastro' }}
+  <!--  BARRA DE FERRAMENTAS E PAGINAÇÃO -->
+  <div class="erp-toolbar-flex">
+    <button type="button" (click)="abrirModalCriar()" class="btn-erp-novo-vivid">
+      Novo ▾
     </button>
-  </header>
 
-  <div class="row g-3 pf-main-content">
-    <div class="col-12 col-xl-4 pf-column-auto" *ngIf="formularioVisivel && usuarioPerfil !== 'diretor'">
-      <div class="card glass-corporate-card p-3 border-0 shadow-sm">
-        <app-form-lancamento [tipoLancamento]="tipoLancamento" [transacao]="transacao" [categorias]="categorias" [formasPagamento]="formasPagamento" [carregando]="carregando" (onMudarTipo)="mudarAbaFormulario($event)" (onSalvar)="executarLancamento()"></app-form-lancamento>
-      </div>
-    </div>
-
-    <div [class]="(formularioVisivel && usuarioPerfil !== 'diretor') ? 'col-12 col-xl-8 pf-column' : 'col-12 pf-column'">
-      <div class="card glass-corporate-card p-2 border-0 h-100 d-flex flex-column shadow-sm">
-        <div class="px-2 pt-2">
-          <app-filtros-lancamento [categorias]="categorias" [formasPagamento]="formasPagamento" (onSearch)="onSearch($event)" (onFiltroChange)="aplicarFiltrosManuais($event)"></app-filtros-lancamento>
-        </div>
-        <div class="pf-table-dynamic-container overflow-auto mt-1 position-relative">
-          <div *ngIf="carregandoTabela" class="pf-table-overlay"><div class="spinner-border text-primary"></div></div>
-          <app-tabela-lancamento [historico]="historicoFiltrado" [paginaAtual]="paginaAtual" [totalPaginas]="totalPaginas" [totalRegistos]="totalRegistos" (onEditar)="abrirModalEditar($event)" (onExcluir)="abrirModalExcluir($event)" (onMudarPagina)="mudarPagina($event)"></app-tabela-lancamento>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!--  MODAL EDITAR COMPLETO -->
-  <div class="custom-center-modal-overlay" *ngIf="mostrarModalEditar">
-    <div class="custom-center-modal-card">
-      <h5 class="fw-black text-primary mb-3 text-start border-bottom pb-2">Editar Lançamento</h5>
-      <div class="vertical-stack-form text-start">
-        
-        <div class="row g-2">
-          <div class="col-6 mb-2">
-            <label class="form-label font-xs fw-bold text-muted">VALOR (AKZ)</label>
-            <input type="number" [(ngModel)]="itemParaEditar.valor" class="form-control form-control-custom fw-bold">
-          </div>
-          <div class="col-6 mb-2">
-            <label class="form-label font-xs fw-bold text-muted">DATA</label>
-            <input type="date" [(ngModel)]="itemParaEditar.data" class="form-control form-control-custom">
-          </div>
-        </div>
-
-        <div class="mb-2">
-          <label class="form-label font-xs fw-bold text-muted">ENTIDADE / BENEFICIÁRIO</label>
-          <input type="text" [(ngModel)]="itemParaEditar.fornecedor" class="form-control form-control-custom">
-        </div>
-
-        <div class="row g-2">
-          <div class="col-6 mb-2">
-            <label class="form-label font-xs fw-bold text-muted">CATEGORIA</label>
-            <select [(ngModel)]="itemParaEditar.categoria_id" class="form-select form-control-custom">
-              <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.nome }}</option>
-            </select>
-          </div>
-          <div class="col-6 mb-2">
-            <label class="form-label font-xs fw-bold text-muted">CANAL / MEIO</label>
-            <select [(ngModel)]="itemParaEditar.forma_pagamento_id" class="form-select form-control-custom">
-              <option *ngFor="let f of formasPagamento" [value]="f.id">{{ f.nome }}</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label font-xs fw-bold text-muted">DESCRIÇÃO / NOTAS</label>
-          <input type="text" [(ngModel)]="itemParaEditar.descricao" class="form-control form-control-custom">
-        </div>
-      </div>
-
-      <div class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
-        <button (click)="fecharModalEditar()" class="btn btn-sm btn-secondary fw-bold px-3">Cancelar</button>
-        <button (click)="salvarEdicao()" class="btn btn-sm btn-primary fw-bold px-3" [disabled]="carregando">
-          <span *ngIf="carregando" class="spinner-border spinner-border-sm me-1"></span>
-          Salvar Alterações
-        </button>
-      </div>
+    <!-- CONTROLADOR DE PAGINAÇÃO -->
+    <div class="erp-pagination-container">
+      <button type="button" class="btn-erp-page-arrow" 
+              [disabled]="paginaAtual === 1 || carregandoTabela" 
+              (click)="mudarPagina(1)">|‹</button>
+      
+      <button type="button" class="btn-erp-page-arrow" 
+              [disabled]="paginaAtual === 1 || carregandoTabela" 
+              (click)="mudarPagina(paginaAtual - 1)">‹</button>
+      
+      <input type="text" [value]="paginaAtual" readonly class="input-page-number-erp">
+      <span class="texto-de-paginas-erp">de {{ totalPaginas }}</span>
+      
+      <button type="button" class="btn-erp-page-arrow" 
+              [disabled]="paginaAtual >= totalPaginas || carregandoTabela" 
+              (click)="mudarPagina(paginaAtual + 1)">›</button>
+      
+      <button type="button" class="btn-erp-page-arrow" 
+              [disabled]="paginaAtual >= totalPaginas || carregandoTabela" 
+              (click)="mudarPagina(totalPaginas)">›|</button>
+      
+      <span class="erp-text-counter">Registos: {{ totalRegistos }} localizados</span>
     </div>
   </div>
 
-  <!-- MODAL EXCLUIR -->
-  <div class="custom-center-modal-overlay" *ngIf="mostrarModalExcluir">
-    <div class="custom-center-modal-card text-center">
-      <i class="bi bi-exclamation-triangle text-danger fs-1"></i>
-      <h5 class="fw-black mt-3">Confirmar Eliminação?</h5>
-      <p class="text-muted font-sm">Esta ação removerá o registo permanentemente.</p>
-      <div class="d-flex justify-content-center gap-2 mt-4">
-        <button (click)="fecharModalExcluir()" class="btn btn-light border fw-bold px-4">Cancelar</button>
-        <button (click)="confirmarExclusao()" class="btn btn-danger fw-bold px-4">Sim, Eliminar</button>
+  <!-- TABELA  -->
+  <main class="workspace-tabela-fluida">
+    <div *ngIf="carregandoTabela" class="d-flex justify-content-center align-items-center py-5">
+      <div class="spinner-border text-info" role="status"></div>
+    </div>
+    
+    <app-tabela-lancamento 
+      *ngIf="!carregandoTabela"
+      [historico]="historicoFiltrado" 
+      [usuarioPerfil]="usuarioPerfil"
+      (onEditar)="abrirModalEditar($event)" 
+      (onExcluir)="abrirModalExcluir($event)">
+    </app-tabela-lancamento>
+  </main>
+
+  <!--  SISTEMA DE NOTIFICAÇÃO (TOAST) -->
+  <div class="safeq-toast-system" [class.active]="exibirToast" [ngClass]="tipoToast">
+    <div class="toast-icon">
+      <i class="bi" [ngClass]="tipoToast === 'sucesso' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'"></i>
+    </div>
+    <div class="toast-body">
+      <span class="toast-title">{{ tipoToast === 'sucesso' ? 'Sucesso' : 'Erro de Sistema' }}</span>
+      <p class="toast-message">{{ mensagemToast }}</p>
+    </div>
+    <div class="toast-progress" [class.running]="exibirToast"></div>
+  </div>
+
+</div>
+
+<!-- ================= MODAIS DE OPERAÇÃO ================= -->
+
+<!-- MODAL CRIAR -->
+<div class="custom-center-modal-overlay" *ngIf="mostrarModalCriar">
+  <div class="erp-modal-window">
+    <app-form-lancamento
+      [tipoLancamento]="tipoLancamento"
+      [transacao]="transacao"
+      [categorias]="categorias"
+      [formasPagamento]="formasPagamento"
+      [carregando]="carregando"
+      (onMudarTipo)="tipoLancamento = $event"
+      (onSalvar)="salvarNovoLancamento()"
+      (onCancelar)="fecharModalCriar()">
+    </app-form-lancamento>
+  </div>
+</div>
+
+<!-- MODAL EDITAR -->
+<div class="custom-center-modal-overlay" *ngIf="mostrarModalEditar">
+  <div class="erp-modal-window">
+    <app-form-lancamento
+      [tipoLancamento]="itemParaEditar.tipo"
+      [transacao]="itemParaEditar"
+      [categorias]="categorias"
+      [formasPagamento]="formasPagamento"
+      [carregando]="carregando"
+      [isEdicao]="true"
+      (onSalvar)="salvarEdicao()"
+      (onCancelar)="fecharModalEditar()">
+    </app-form-lancamento>
+  </div>
+</div>
+
+<!-- MODAL EXCLUIR -->
+<div class="custom-center-modal-overlay" *ngIf="mostrarModalExcluir">
+  <div class="erp-modal-window alert-critical">
+    <div class="erp-modal-titlebar danger">
+      <span class="erp-modal-title-text">Confirmação de Eliminação</span>
+      <button type="button" (click)="fecharModalExcluir()" class="btn-close-compact">×</button>
+    </div>
+    <div class="erp-modal-body-warning">
+      <i class="bi bi-exclamation-octagon-fill"></i>
+      <div class="warning-text">
+        <strong>Atenção: Ação Irreversível</strong><br>
+        Deseja remover o lançamento de <strong>{{ itemParaEditar.valor | number:'1.2-2' }} AKZ</strong>?
       </div>
+    </div>
+    <div class="erp-modal-footer">
+      <button type="button" (click)="fecharModalExcluir()" class="btn-sys-gray">Cancelar</button>
+      <button type="button" (click)="confirmarExclusao()" class="btn-sys-danger">Confirmar</button>
     </div>
   </div>
 </div>

@@ -1,66 +1,104 @@
-<div class="pf-viewport-wrapper p-2 animate-fade-in">
+<div class="erp-viewport-total" (dragstart)="$event.preventDefault()">
   
-  <div *ngIf="mensagemSucesso" class="alert alert-success custom-toast" role="alert">
-  <i class="bi bi-check-circle-fill me-2"></i>{{ mensagemSucesso }}
-</div>
-
-  <!-- CABEÇALHO  -->
-  <header class="pf-page-header mb-2">
-    <div class="header-title-block">
-      <h4 class="fw-black m-0 text-uppercase">Relatórios Analíticos</h4>
-      <p class="m-0 fw-bold font-xs text-primary">Auditoria financeira em tempo real.</p>
+  <!-- SISTEMA DE TOAST -->
+  <div class="safeq-toast-system" [class.active]="exibirToast" [ngClass]="tipoToast">
+    <div class="toast-icon">
+      <i class="bi" [ngClass]="tipoToast === 'sucesso' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'"></i>
     </div>
-  </header>
-
-  <!-- FILTROS ACHATADOS -->
-  <div class="pf-filters-container mb-2">
-    <app-filtro-relatorio 
-      [tipoDemonstrativo]="tipoDemonstrativo"
-      [dataInicial]="dataInicial"
-      [dataFinal]="dataFinal"
-      (tipoDemonstrativoChange)="tipoDemonstrativo = $event"
-      (dataInicialChange)="dataInicial = $event"
-      (dataFinalChange)="dataFinal = $event"
-      (onFiltrar)="carregarRelatorioReal()"
-      (onExcel)="exportarExcel()"
-      (onPdf)="imprimirPDF()">
-    </app-filtro-relatorio>
+    <div class="toast-body">
+      <span class="toast-title">{{ tipoToast === 'sucesso' ? 'Sucesso' : 'Aviso do Sistema' }}</span>
+      <p class="toast-message">{{ mensagemToast }}</p>
+    </div>
+    <div class="toast-progress" [class.running]="exibirToast"></div>
   </div>
 
-  <!-- ÁREA DA FOLHA -->
-  <section class="pf-report-viewport">
-    <div class="card glass-corporate-card p-3 border-0 h-100 d-flex flex-column shadow-lg">
-      
-      <!-- TIMBRE + MÉTRICAS -->
-      <div class="row align-items-center border-bottom mb-2 pb-2 g-2 pf-report-header-row">
-        <div class="col-md-6 border-end">
-          <app-timbre-relatorio
-            [usuarioPerfil]="usuarioPerfil"
-            [usuarioNome]="usuarioNome"
-            [dataInicial]="dataInicial"
-            [dataFinal]="dataFinal">
-          </app-timbre-relatorio>
-        </div>
-        <div class="col-md-6">
-          <app-metricas-relatorio
-            [totalReceitas]="totais.receitas"
-            [totalDespesas]="totais.despesas"
-            [totalResultado]="totais.resultado">
-          </app-metricas-relatorio>
-        </div>
-      </div>
+  <!-- TIMBRE DA INSTITUIÇÃO -->
+  <div class="erp-top-timbre-strip">
+    <app-timbre-relatorio
+      [usuarioPerfil]="usuarioPerfil"
+      [usuarioNome]="usuarioNome"
+      [dataInicial]="dataInicial"
+      [dataFinal]="dataFinal">
+    </app-timbre-relatorio>
+  </div>
 
-      <!-- TABELA COM ESPAÇO  -->
-      <div class="pf-table-dynamic-wrapper flex-grow-1 position-relative">
-        <div *ngIf="carregando" class="pf-table-overlay">
-          <div class="spinner-border text-primary"></div>
-        </div>
+  <!--  MÉTRICAS OPERACIONAIS -->
+  <div class="erp-top-metrics-strip">
+    <app-metricas-relatorio
+      [totalReceitas]="totais.receitas"
+      [totalDespesas]="totais.despesas"
+      [totalResultado]="totais.resultado">
+    </app-metricas-relatorio>
+  </div>
 
-        <div class="h-100 overflow-auto">
-          <app-tabela-relatorio [lancamentos]="lancamentos"></app-tabela-relatorio>
-        </div>
-      </div>
+  <!-- FILTROS E PARAMETRIZAÇÃO -->
+  <app-filtro-relatorio 
+    [tipoDemonstrativo]="tipoDemonstrativo"
+    [dataInicial]="dataInicial"
+    [dataFinal]="dataFinal"
+    [paginaAtual]="paginaAtual"
+    [totalPaginas]="totalPaginas"
+    [totalRegistos]="totalRegistos"
+    (tipoDemonstrativoChange)="tipoDemonstrativo = $event"
+    (dataInicialChange)="dataInicial = $event"
+    (dataFinalChange)="dataFinal = $event"
+    (onMudarPagina)="mudarPagina($event)"
+    (onFiltrar)="carregarRelatorioReal()"
+    (onExcel)="exportarExcel()"
+    (onPdf)="imprimirPDF()">
+  </app-filtro-relatorio>
 
+  <!-- ÁREA DA TABELA  -->
+  <main class="workspace-tabela-fluida">
+    <div *ngIf="carregando" class="pf-table-overlay">
+      <div class="spinner-border text-secondary" role="status"></div>
     </div>
-  </section>
+
+    <app-tabela-relatorio 
+      [lancamentos]="lancamentos"
+      [usuarioPerfil]="usuarioPerfil"
+      (onEditar)="abrirModalEditar($event)"
+      (onExcluir)="abrirModalExcluir($event)">
+    </app-tabela-relatorio>
+  </main>
+
+</div>
+
+<!-- MODAL DE EDIÇÃO -->
+<div class="custom-center-modal-overlay" *ngIf="mostrarModalEditar">
+  <div class="erp-modal-window" style="max-width: 620px !important; background: transparent !important; border: none !important; box-shadow: none !important;">
+    <app-form-lancamento
+      [tipoLancamento]="itemParaEditar.tipo"
+      [transacao]="itemParaEditar"
+      [categorias]="categorias"
+      [formasPagamento]="formasPagamento"
+      [carregando]="carregando"
+      [isEdicao]="true"
+      (onSalvar)="salvarEdicao()"
+      (onCancelar)="fecharModalEditar()">
+    </app-form-lancamento>
+  </div>
+</div>
+
+<!-- MODAL DE EXCLUSÃO -->
+<div class="custom-center-modal-overlay" *ngIf="mostrarModalExcluir">
+  <div class="erp-modal-window" style="max-width: 440px !important; background-color: #f0f0f0 !important; border: 1px solid #707070 !important; box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important; border-radius: 3px !important; overflow: hidden;">
+    <div class="erp-modal-titlebar" style="background-color: #ffffff !important; padding: 6px 12px !important; border-bottom: 1px solid #dcdfe6 !important; display: flex !important; justify-content: space-between !important; align-items: center !important;">
+      <span class="erp-modal-title-text" style="color: #dc2626 !important; font-weight: bold; font-size: 12px;">Aviso do Sistema - Confirmação de Exclusão</span>
+      <button (click)="fecharModalExcluir()" style="font-size: 20px; color: #999; border: none; background: none; font-weight: bold; cursor: pointer;">×</button>
+    </div>
+    
+    <div style="background-color: #ffffff !important; padding: 20px !important; display: flex !important; gap: 16px !important; align-items: flex-start !important;">
+      <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 2rem;"></i>
+      <div style="font-size: 13px !important; color: #000000 !important; font-weight: 500 !important; line-height: 1.5 !important; text-align: left !important; font-family: Arial, sans-serif;">
+        <strong>Tem certeza de que deseja remover este lançamento?</strong><br>
+        Esta operação apagará definitivamente a linha selecionada do fluxo de caixa e não poderá ser desfeita.
+      </div>
+    </div>
+    
+    <div style="background-color: #f0f0f0 !important; padding: 10px 12px !important; display: flex !important; justify-content: flex-end !important; gap: 8px !important; border-top: 1px solid #e0e0e0 !important;">
+      <button type="button" (click)="fecharModalExcluir()" style="background-color: #e1e1e1 !important; border: 1px solid #adadad !important; color: #000000 !important; font-size: 12px !important; font-weight: 500 !important; padding: 4px 24px !important; min-width: 85px !important; cursor: pointer !important; border-radius: 3px !important;">Cancelar</button>
+      <button type="button" (click)="confirmarExclusao()" style="background-color: #ef4444 !important; border: 1px solid #dc2626 !important; color: #ffffff !important; font-size: 12px !important; font-weight: bold !important; padding: 4px 24px !important; min-width: 85px !important; cursor: pointer !important; border-radius: 3px !important;">Excluir</button>
+    </div>
+  </div>
 </div>

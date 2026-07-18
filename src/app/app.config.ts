@@ -1,23 +1,29 @@
-import 'zone.js'
+import 'zone.js';
 import { ApplicationConfig, provideZoneChangeDetection, LOCALE_ID, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient, withFetch, withXsrfConfiguration } from '@angular/common/http'; 
 import { routes } from './app.routes';
+import localePtAo from '@angular/common/locales/pt-PT'; 
+import { registerLocaleData } from '@angular/common';
+
+registerLocaleData(localePtAo);
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     
-    // Habilita a detecção de mudanças nativa para componentes standalone
-    provideZoneChangeDetection({ eventCoalescing: true,   }),
+    provideZoneChangeDetection({ eventCoalescing: true }),
     
-    // Injeta os caminhos de navegação do ecossistema SAFEQ
     provideRouter(routes),
     
-    // Configura o cliente HTTP com a moderna Fetch 
-    provideHttpClient(withFetch()),
+    provideHttpClient(
+      withFetch(),
+      withXsrfConfiguration({
+        cookieName: 'XSRF-TOKEN',   
+        headerName: 'X-XSRF-TOKEN', 
+      })
+    ),
 
-    // CONFIGURAÇÃO ADICIONADA
     { provide: LOCALE_ID, useValue: 'pt-AO' }
   ]
 };

@@ -1,65 +1,216 @@
-<div class="card glass-corporate-card p-3 border-0 h-100 shadow-sm">
-  <div class="text-start mb-2">
-    <h6 class="fw-bold text-dark m-0 d-flex align-items-center gap-2">
-      <i class="bi bi-plus-circle-dotted text-primary"></i> Novo Lançamento
-    </h6>
-  </div>
+<style>
+  /* CARD DE FORMULÁRIO OPERACIONAL */
+  .erp-form-card-master {
+    font-family: Arial, Helvetica, sans-serif !important;
+    background-color: #f1f3f5 !important; 
+    border: 1px solid #cbd5e1 !important; 
+    border-radius: 6px !important;
+    padding: 24px !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important; 
+    width: 100% !important;
+    max-width: 460px !important; 
+    margin: 0 auto !important; 
+  }
 
-  <div class="d-flex gap-2 mb-3">
-    <button type="button" class="btn btn-outline-success w-50 fw-bold btn-sm py-2" 
-            [class.active]="tipoLancamento === 'receita'" (click)="mudarTipo('receita')">
-      <i class="bi bi-arrow-up-circle"></i> Receita
-    </button>
-    <button type="button" class="btn btn-outline-danger w-50 fw-bold btn-sm py-2" 
-            [class.active]="tipoLancamento === 'despesa'" (click)="mudarTipo('despesa')">
-      <i class="bi bi-arrow-down-circle"></i> Despesa
-    </button>
-  </div>
+  /* TÍTULO DINÂMICO E ELEGANTE */
+  .erp-form-title-dynamic {
+    font-size: 13px !important;
+    font-weight: bold !important;
+    color: #475569 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    margin-bottom: 16px !important;
+    padding-bottom: 10px !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+    text-align: left !important;
+  }
+  
+  .erp-tab-toggle-container {
+    display: flex !important;
+    width: 100% !important;
+    background-color: #e2e8f0 !important;
+    padding: 4px !important;
+    border-radius: 6px !important;
+    margin-bottom: 20px !important;
+    border: 1px solid #b0b5be !important;
+  }
+  .btn-toggle-erp {
+    flex: 1 !important;
+    border: none !important;
+    padding: 8px 0 !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease-in-out !important;
+    background-color: transparent;
+    color: #64748b;
+  }
+  .btn-toggle-erp.active-receita {
+    background-color: #22c55e !important;
+    color: #ffffff !important;
+  }
+  .btn-toggle-erp.active-despesa {
+    background-color: #ef4444 !important;
+    color: #ffffff !important;
+  }
 
-  <form (ngSubmit)="salvar()">
-    <div class="row g-2">
-      <!-- Valor e Data  -->
-      <div class="col-6 mb-2">
-        <label class="form-label font-xs fw-bold text-secondary mb-1">VALOR (AKZ)</label>
-        <input type="number" [(ngModel)]="transacao.valor" name="valor" class="form-control form-control-sm fw-bold" placeholder="0,00" required>
-      </div>
-      <div class="col-6 mb-2">
-        <label class="form-label font-xs fw-bold text-secondary mb-1">DATA</label>
-        <input type="date" [(ngModel)]="transacao.data" name="data" class="form-control form-control-sm" required>
-      </div>
+  .erp-form-two-columns {
+    display: flex !important;
+    flex-direction: row !important;
+    width: 100% !important;
+    gap: 16px !important; 
+  }
+  .erp-vertical-column {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important; 
+  }
 
-      <div class="col-12 mb-2">
-        <label class="form-label font-xs fw-bold text-secondary mb-1">ENTIDADE</label>
-        <input type="text" [(ngModel)]="transacao.fornecedor" name="fornecedor" class="form-control form-control-sm" placeholder="Nome do cliente/fornecedor" required>
-      </div>
+  .erp-field-label {
+    font-size: 11px !important;
+    font-weight: bold !important;
+    color: #475569 !important;
+    margin-bottom: 5px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    display: block !important;
+  }
 
-      <!-- Categoria e Pagamento  -->
-      <div class="col-6 mb-2">
-        <label class="form-label font-xs fw-bold text-secondary mb-1">CATEGORIA</label>
-        <select [(ngModel)]="transacao.categoria_id" name="categoria_id" class="form-select form-select-sm" required>
-          <option value="" disabled selected>Selecionar...</option>
-          <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.nome }}</option>
-        </select>
-      </div>
-      <div class="col-6 mb-2">
-        <label class="form-label font-xs fw-bold text-secondary mb-1">MEIO</label>
-        <select [(ngModel)]="transacao.forma_pagamento_id" name="forma_pagamento_id" class="form-select form-select-sm" required>
-          <option value="" disabled selected>Selecionar...</option>
-          <option *ngFor="let f of formasPagamento" [value]="f.id">{{ f.nome }}</option>
-        </select>
-      </div>
+  .erp-field-input {
+    background-color: #ffffff !important;
+    border: 1px solid #b0b5be !important;
+    border-radius: 4px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    color: #000000 !important;
+    padding: 6px 10px !important;
+    height: 36px !important; 
+    width: 100% !important;
+  }
+  .erp-field-input:focus {
+    border-color: #409eff !important;
+    outline: none !important;
+  }
 
-      <div class="col-12 mb-3">
-        <label class="form-label font-xs fw-bold text-secondary mb-1">NOTAS</label>
-        <textarea [(ngModel)]="transacao.descricao" name="descricao" class="form-control form-control-sm" rows="2" placeholder="Obs..."></textarea>
-      </div>
+  /* LINHA DE BOTÕES CENTRALIZADOS */
+  .erp-action-footer-panel {
+    display: flex !important;
+    justify-content: center !important; 
+    gap: 12px !important; 
+    margin-top: 36px !important; 
+    padding-top: 14px !important; 
+    border-top: 1px solid #cbd5e1 !important;
+  }
+
+  .btn-sys-confirm {
+    background: linear-gradient(to bottom, #0284c7 0%, #0369a1 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid #0284c7 !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+    padding: 0 26px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    height: 36px !important;
+  }
+  .btn-sys-confirm:hover:not(:disabled) {
+    background: linear-gradient(to bottom, #38bdf8 0%, #0284c7 100%) !important;
+  }
+
+  .btn-sys-cancel-red {
+    background: linear-gradient(to bottom, #ef4444 0%, #dc2626 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid #dc2626 !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+    padding: 0 24px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    height: 36px !important;
+  }
+  .btn-sys-cancel-red:hover {
+    background: linear-gradient(to bottom, #f87171 0%, #ef4444 100%) !important;
+  }
+</style>
+
+<div class="erp-form-card-master" (dragstart)="$event.preventDefault()">
+  <form (ngSubmit)="submit()">
+    
+    <div class="erp-form-title-dynamic">
+      {{ isEdicao ? 'Editar Lançamento' : 'Registrar Movimentação' }}
+    </div>
+    
+    <!-- ALTERNADOR SUPERIOR (RECEITA / DESPESA) -->
+    <div class="erp-tab-toggle-container">
+      <button type="button" class="btn-toggle-erp" 
+              [class.active-receita]="tipoLancamento === 'receita'"
+              (click)="mudarAba('receita')">
+        Aporte / Receita
+      </button>
+      <button type="button" class="btn-toggle-erp" 
+              [class.active-despesa]="tipoLancamento === 'despesa'"
+              (click)="mudarAba('despesa')">
+        Saída / Despesa
+      </button>
     </div>
 
-    <button type="submit" class="btn w-100 fw-bold text-white text-uppercase py-2" 
-            [class.btn-success]="tipoLancamento === 'receita'" 
-            [class.btn-danger]="tipoLancamento === 'despesa'" [disabled]="carregando">
-      <span *ngIf="carregando" class="spinner-border spinner-border-sm me-1"></span>
-      Confirmar {{ tipoLancamento === 'receita' ? 'Receita' : 'Despesa' }}
-    </button>
+    <div class="erp-form-two-columns">
+      
+      <!-- COLUNA DA ESQUERDA -->
+      <div class="erp-vertical-column">
+        <div>
+          <label class="erp-field-label">Valor (AKZ)</label>
+          <input type="number" [(ngModel)]="transacao.valor" name="valor" class="form-control erp-field-input fw-bold" required placeholder="0.00" step="0.01">
+        </div>
+
+        <div>
+          <label class="erp-field-label">Entidade / Beneficiário</label>
+          <input type="text" [(ngModel)]="transacao.fornecedor" name="fornecedor" class="form-control erp-field-input" placeholder="Razão social..." required>
+        </div>
+
+        <div>
+          <label class="erp-field-label">Meio de Liquidação</label>
+          <select [(ngModel)]="transacao.forma_pagamento_id" name="forma_pagamento_id" class="form-select erp-field-input" required>
+            <option value="" disabled selected>Selecionar...</option>
+            <option *ngFor="let f of formasPagamento" [value]="f.id">{{ f.nome }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- COLUNA DA DIREITA -->
+      <div class="erp-vertical-column">
+        <div>
+          <label class="erp-field-label">Data de Competência</label>
+          <input type="date" [(ngModel)]="transacao.data" name="data" class="form-control erp-field-input" required>
+        </div>
+
+        <div>
+          <label class="erp-field-label">Categoria de Fluxo</label>
+          <select [(ngModel)]="transacao.categoria_id" name="categoria_id" class="form-select erp-field-input" required>
+            <option value="" disabled selected>Selecionar...</option>
+            <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.nome }}</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="erp-field-label">Descrição / Notas</label>
+          <input type="text" [(ngModel)]="transacao.descricao" name="descricao" class="form-control erp-field-input" placeholder="Observações...">
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BOTÕES CENTRALIZADOS NA BASE DA ESTRUTURA CINZENTA -->
+    <div class="erp-action-footer-panel">
+      <button type="button" (click)="cancelar()" class="btn-sys-cancel-red">Cancelar</button>
+      <button type="submit" class="btn-sys-confirm" [disabled]="carregando">
+        <span *ngIf="carregando" class="spinner-border spinner-border-sm me-1" style="width: 12px; height: 12px;"></span>
+        Confirmar
+      </button>
+    </div>
+
   </form>
 </div>

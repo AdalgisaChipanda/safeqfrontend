@@ -1,118 +1,345 @@
-@use 'sass:color';
+/* ==========================================================================
+   PARTE 1: TRAVAMENTO DE VISOR GLOBAL 
+   ========================================================================== */
 
-// VARIÁVEIS DE COR
-$safeq-blue-sky: #0284c7;   
-$safeq-blue-deep: #075985;  
-$white-pure: #ffffff;
-$text-dark-corporate: #1e293b;
+* {
+  box-sizing: border-box !important; 
+}
 
-$glass-gray-base: rgba(241, 245, 249, 0.85);
-$glass-gray-border: rgba(15, 23, 42, 0.12);
-$glass-gray-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.05);
+:host {
+  font-family: Arial, sans-serif !important;
+  display: block !important;
+  
+  // TRAVA O SOFTWARE NO NAVEGADOR DE MARGEM A MARGEM
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important; 
+  background-color: #ffffff !important;
+  overscroll-behavior: none !important;
 
-// LAYOUT DE TELA CHEIA
-.pf-viewport-wrapper {
-  height: calc(100vh - 45px);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  .erp-viewport-total {
+    width: 100% !important;
+    height: 100vh !important;
+    max-width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    background-color: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    position: relative !important;
+  }
 
-  header.pf-page-header {
-    padding-left: 4.5rem !important; 
-    transition: padding-left 0.25s ease;
-    
-    h4.fw-black { 
-      color: $safeq-blue-sky !important; 
-      font-weight: 900 !important;
-      letter-spacing: -0.5px;
+  .pf-main-content {
+    flex: 1 !important;
+    min-height: 0 !important;
+    height: 100% !important;
+  }
+}
+
+  // BARRA DE FERRAMENTAS INTEGRADA NO TOP
+  .erp-toolbar-flex {
+    flex-shrink: 0 !important; 
+    background-color: #f1f3f5 !important;
+    border-bottom: 1px solid #b0b5be !important;
+    padding: 8px 14px !important; 
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+  }
+
+  .btn-erp-novo-vivid {
+    background: linear-gradient(to bottom, #8ae600 0%, #66b300 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid #559900 !important;
+    font-size: 13px !important; 
+    font-weight: bold !important;
+    padding: 6px 18px !important; 
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
+    &:hover { background: linear-gradient(to bottom, #99f200 0%, #73cc00 100%) !important; }
+  }
+
+  .erp-pagination-container {
+    display: flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    color: #64748b !important; 
+  }
+
+  .btn-erp-page-arrow {
+    background-color: #ffffff !important;
+    border: 1px solid #b0b5be !important;
+    color: #475569 !important; 
+    font-size: 12px !important;
+    font-weight: bold !important;
+    padding: 2px 10px !important;
+    height: 30px !important; 
+    cursor: pointer !important;
+    border-radius: 3px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    &:disabled { opacity: 0.4 !important; }
+  }
+
+  .input-page-number-erp {
+    width: 42px !important;
+    height: 30px !important;
+    text-align: center !important;
+    font-size: 13px !important;
+    border: 1px solid #b0b5be !important;
+    font-weight: bold !important;
+    border-radius: 3px !important;
+    color: #475569 !important; 
+  }
+
+  .texto-de-paginas-erp, .erp-text-counter {
+    font-size: 13px !important;
+    color: #64748b !important; 
+    font-weight: bold !important;
+    white-space: nowrap !important;
+    margin: 0 5px;
+  }
+
+  .workspace-tabela-fluida {
+    flex: 1 !important; 
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background-color: #ffffff !important;
+    min-height: 0 !important; 
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+
+  .th-limpo {
+    color: #64748b !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    background-color: #f8fafc !important;
+    padding: 10px 12px !important;
+    border-bottom: 1px solid #dee2e6 !important;
+    border-right: 1px solid #dee2e6 !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+    box-shadow: inset 0 -1px 0 #dee2e6 !important;
+    &:first-child { border-left: 1px solid #dee2e6 !important; }
+  }
+
+  .tabela-grade-completa {
+    width: 100% !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    tbody tr td {
+      padding: 8px 12px !important;
+      border-bottom: 1px solid #dee2e6 !important;
+      border-right: 1px solid #dee2e6 !important;
+      vertical-align: middle !important;
+      &:first-child { border-left: 1px solid #dee2e6 !important; }
     }
-    p { color: $safeq-blue-deep !important; font-size: 0.75rem; }
   }
-}
 
-.pf-main-content { flex: 1; min-height: 0; height: 100%; }
-
-// Ajuste das Colunas para não quebrar com max-width 1200px
-.pf-column { height: 100%; display: flex; flex-direction: column; }
-.pf-column-auto { height: auto; } 
-
-// TABELA COMPACTA
-.pf-table-dynamic-container {
-  min-height: 0;
-  flex: 1;
-  overflow-y: auto !important;
-  background: white;
-  border-radius: 8px;
-  &::-webkit-scrollbar { width: 6px; }
-  &::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-}
-
-.perfect-report-table {
-  width: 100%;
-  thead th {
-    background-color: #f8fafc; color: #475569; font-size: 0.75rem;
-    text-transform: uppercase; font-weight: 800; padding: 0.8rem 1rem;
-    border-bottom: 2px solid #edf2f7;
-    position: sticky; top: 0; z-index: 10;
+  .td-data-categoria-descricao {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
   }
-  tbody tr td { 
-    padding: 0.75rem 1rem; 
-    border-bottom: 1px solid #f1f5f9; 
-    font-size: 0.88rem; color: #1e293b; font-weight: 600;
+
+  // DESIGN DO CARTÃO 
+  .erp-form-card-inline {
+    background-color: #f1f3f5 !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    padding: 16px !important;
+    width: 100% !important;
   }
-}
 
-// FORMULÁRIO E INPUTS
-.form-control-custom { 
-  padding: 0.65rem 0.85rem; border: 1px solid #cbd5e1; border-radius: 6px !important; 
-  font-size: 0.9rem; background-color: rgba(255, 255, 255, 0.95);
-  color: $text-dark-corporate !important; font-weight: 600;
-  &:focus { border-color: $safeq-blue-sky; box-shadow: 0 0 0 4px rgba($safeq-blue-sky, 0.15); } 
-}
+  .erp-tab-toggle-container {
+    display: flex !important;
+    width: 100% !important;
+    background-color: #e2e8f0 !important;
+    padding: 4px !important;
+    border-radius: 6px !important;
+    margin-bottom: 20px !important;
+    border: 1px solid #b0b5be !important;
+  }
+  .btn-toggle-erp {
+    flex: 1 !important;
+    border: none !important;
+    padding: 8px 0 !important;
+    font-size: 11px !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    background-color: transparent;
+    color: #64748b;
+  }
+  .btn-toggle-erp.active-receita { background-color: #22c55e !important; color: #ffffff !important; }
+  .btn-toggle-erp.active-despesa { background-color: #ef4444 !important; color: #ffffff !important; }
+  .btn-toggle-erp.active-ambos { background-color: #0284c7 !important; color: #ffffff !important; }
 
-.glass-corporate-card {
-  border-radius: 8px !important; 
-  background: $glass-gray-base !important;
-  backdrop-filter: blur(14px) !important; 
-  border: 1px solid $glass-gray-border !important; 
-  box-shadow: $glass-gray-shadow !important; 
-}
+  .erp-field-label {
+    font-size: 11px !important;
+    font-weight: bold !important;
+    color: #475569 !important;
+    margin-bottom: 5px !important;
+    text-transform: uppercase !important;
+    display: block !important;
+  }
 
-// BOTÕES SELETORES DO FORMULÁRIO (Correção para não desalinhar)
-.btn-group-selector {
+  .erp-field-input {
+    background-color: #ffffff !important;
+    border: 1px solid #b0b5be !important;
+    border-radius: 4px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #000000 !important;
+    padding: 6px 10px !important;
+    height: 36px !important; 
+    width: 100% !important;
+  }
+
+  // BADGES OPERACIONAIS ESFUMADAS
+  .badge-esfumado {
+    padding: 0.35rem 0.85rem; border-radius: 20px; font-weight: 800; font-size: 0.65rem;
+    text-transform: uppercase; display: inline-block;
+    &.receita { background-color: #e6f4ea; color: #10b981 !important; }
+    &.despesa { background-color: #fce8e6; color: #ef4444 !important; }
+    &.ambos { background-color: #e0f2fe; color: #0284c7 !important; }
+  }
+
+  .btn-editar-azul {
+    background: #ffffff !important; border: 1px solid #e2e8f0 !important;
+    border-radius: 6px !important; padding: 3px 8px !important; color: #3b82f6 !important; cursor: pointer;
+  }
+  .btn-excluir-vermelho {
+    background: #ffffff !important; border: 1px solid #e2e8f0 !important;
+    border-radius: 6px !important; padding: 3px 8px !important; color: #ef4444 !important; cursor: pointer;
+  }
+
+  .custom-center-modal-overlay {
+    position: fixed !important; inset: 0 !important;
+    background-color: rgba(0, 0, 0, 0.4) !important;
+    display: flex !important; align-items: center !important; justify-content: center !important;
+    z-index: 99999 !important;
+  }
+
+  .erp-form-card-master {
+    background-color: #f1f3f5 !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    padding: 24px !important;
+    width: 100% !important;
+    max-width: 460px !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+  }
+
+  .erp-form-title-dynamic {
+    font-size: 13px !important; font-weight: bold !important; color: #475569 !important;
+    text-transform: uppercase !important; margin-bottom: 16px !important;
+    padding-bottom: 10px !important; border-bottom: 1px solid #cbd5e1 !important;
+  }
+
+  .erp-form-two-columns { display: flex !important; flex-direction: row !important; width: 100% !important; gap: 16px !important; }
+  .erp-vertical-column { flex: 1 !important; display: flex !important; flex-direction: column !important; gap: 14px !important; }
+
+  .erp-action-footer-panel {
+    display: flex !important; justify-content: center !important; gap: 12px !important;
+    margin-top: 36px !important; padding-top: 14px !important; border-top: 1px solid #cbd5e1 !important;
+  }
+
+  .btn-sys-confirm {
+    background: linear-gradient(to bottom, #0284c7 0%, #0369a1 100%) !important; color: #ffffff !important;
+    border: 1px solid #0284c7 !important; font-size: 12px !important; font-weight: bold !important;
+    padding: 0 26px !important; border-radius: 4px !important; height: 36px !important; cursor: pointer;
+    &:hover { background: linear-gradient(to bottom, #38bdf8 0%, #0284c7 100%) !important; }
+  }
+
+  .btn-sys-cancel-red {
+    background: linear-gradient(to bottom, #ef4444 0%, #dc2626 100%) !important; color: #ffffff !important;
+    border: 1px solid #dc2626 !important; font-size: 12px !important; font-weight: bold !important;
+    padding: 0 24px !important; border-radius: 4px !important; height: 36px !important; cursor: pointer;
+    &:hover { background: linear-gradient(to bottom, #f87171 0%, #ef4444 100%) !important; }
+  }
+
+  // ALERTA DE EXCLUSÃO 
+  .erp-modal-window-alert {
+    background-color: #f0f0f0 !important; border: 1px solid #707070 !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important; width: 100% !important; max-width: 440px !important;
+  }
+  .erp-modal-titlebar-alert {
+    background-color: #ffffff !important; padding: 6px 12px !important;
+    border-bottom: 1px solid #dcdfe6 !important; display: flex !important; justify-content: space-between !important;
+  }
+  .erp-modal-title-text-alert { font-size: 12px !important; font-weight: bold; color: #dc2626 !important; }
+  .erp-modal-body-content-alert { background-color: #ffffff !important; padding: 20px !important; display: flex !important; gap: 16px !important; }
+  .erp-alert-message-text { font-size: 13px !important; color: #000000 !important; line-height: 1.5 !important; font-family: Arial, sans-serif; }
+  .erp-modal-footer-actionbar-alert { background-color: #f0f0f0 !important; padding: 10px 12px !important; display: flex !important; justify-content: flex-end !important; gap: 8px !important; border-top: 1px solid #e0e0e0 !important; }
+  
+  .btn-sys-action-cancel { background-color: #e1e1e1 !important; border: 1px solid #adadad !important; font-size: 12px !important; padding: 4px 24px !important; min-width: 85px !important; cursor: pointer; border-radius: 3px !important; &:hover { background-color: #eaf2fb !important; border-color: #0078d7 !important; } }
+  .btn-sys-action-delete { background-color: #ef4444 !important; border: 1px solid #dc2626 !important; color: #ffffff !important; font-size: 12px !important; font-weight: bold !important; padding: 4px 24px !important; min-width: 85px !important; cursor: pointer; border-radius: 3px !important; &:hover { background-color: #dc2626 !important; } }
+  .btn-close-compact { background: none; border: none; font-size: 20px; font-weight: bold; color: #999; cursor: pointer; &:hover { color: #333; } }
+/* ESTILO DO TOAST PROFISSIONAL (IGUAL AO DE RECEITAS) */
+.safeq-toast-system {
+  position: fixed;
+  top: 25px;
+  right: 25px;
+  z-index: 11000; 
   display: flex;
-  gap: 4px;
-  .btn {
-    flex: 1;
-    font-size: 0.7rem;
-    font-weight: 800;
-    padding: 8px 2px;
-    white-space: nowrap;
+  align-items: center;
+  gap: 15px;
+  min-width: 320px;
+  background-color: #ffffff;
+  padding: 16px 20px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transform: translateX(120%);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  &.active { transform: translateX(0); }
+
+  &.sucesso {
+    border-left: 6px solid #22c55e;
+    .toast-icon i { color: #22c55e; }
+    .toast-progress { background: #22c55e; }
+  }
+
+  &.erro {
+    border-left: 6px solid #ef4444;
+    .toast-icon i { color: #ef4444; }
+    .toast-progress { background: #ef4444; }
+  }
+
+  .toast-icon i { font-size: 1.8rem; }
+  .toast-body {
+    display: flex;
+    flex-direction: column;
+    .toast-title { font-size: 13px; font-weight: 800; color: #1e293b; text-transform: uppercase; }
+    .toast-message { font-size: 12px; color: #64748b; margin: 0; font-weight: 500; }
+  }
+
+  .toast-progress {
+    position: absolute;
+    bottom: 0; left: 0; height: 3px; width: 0;
+    &.running { animation: progressAnim 4s linear forwards; }
   }
 }
 
-.badge-esfumado {
-  padding: 0.35rem 0.85rem; border-radius: 20px; font-weight: 800; font-size: 0.65rem;
-  text-transform: uppercase; display: inline-block;
-  &.receita { background-color: #e6f4ea; color: #10b981 !important; }
-  &.despesa { background-color: #fce8e6; color: #ef4444 !important; }
-  &.ambos { background-color: #e0f2fe; color: #0284c7 !important; }
+@keyframes progressAnim {
+  from { width: 100%; }
+  to { width: 0%; }
 }
-
-.custom-center-modal-overlay {
-  position: fixed !important; top: 0; left: 0; width: 100vw; height: 100vh;
-  background-color: rgba(15, 23, 42, 0.65) !important; backdrop-filter: blur(5px) !important; z-index: 9999999 !important;
-  display: flex; align-items: center; justify-content: center;
-}
-
-.custom-center-modal-card {
-  width: 400px !important; background-color: $white-pure !important;
-  border-radius: 8px !important; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5) !important;
-  animation: modalScaleUp 0.18s ease-in-out;
-}
-
-@keyframes modalScaleUp { from { transform: scale(0.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-.animate-fade-in { animation: fadeIn 0.4s ease-out; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-.fw-black { font-weight: 900; }
-.font-xs { font-size: 0.75rem !important; }

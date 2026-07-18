@@ -1,194 +1,228 @@
-import { Component, OnInit, ChangeDetectorRef, ViewEncapsulation, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
-import { RouterModule, Router } from '@angular/router';
-import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
-import { FormLancamentoComponent } from './components/form-lancamento/form-lancamento.component';
 import { FiltrosLancamentoComponent } from './components/filtros-lancamento/filtros-lancamento.component';
 import { TabelaLancamentoComponent } from './components/tabela-lancamento/tabela-lancamento.component';
+import { FormLancamentoComponent } from './components/form-lancamento/form-lancamento.component';
 
 @Component({
   selector: 'app-receitas',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, FormLancamentoComponent, FiltrosLancamentoComponent, TabelaLancamentoComponent],
+  imports: [CommonModule, FormsModule, FiltrosLancamentoComponent, TabelaLancamentoComponent, FormLancamentoComponent],
   templateUrl: './receitas.component.html',
-  styleUrls: ['./receitas.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  styleUrls: ['./receitas.component.scss']
 })
 export class ReceitasComponent implements OnInit, OnDestroy {
-  // Dados do Formulário Novo
-  transacao = { valor: null, data: '2026-07-05', categoria_id: '', forma_pagamento_id: '', fornecedor: '', descricao: '' };
-  
-  mensagemSucesso: string = '';
-  mensagemErro: string = '';
-  carregando: boolean = false;        
-  carregandoTabela: boolean = false;  
-  
-  formularioVisivel: boolean = true;
-  tipoLancamento: 'receita' | 'despesa' = 'receita';
-  usuarioPerfil: string = '';
-  
-  // Variáveis dos Modais (RESOLVE O PROBLEMA DE ABRIR E EDITAR)
-  mostrarModalEditar: boolean = false;
-  mostrarModalExcluir: boolean = false;
-  itemParaEditar: any = {};
-  idParaExcluir: number | null = null;
-  tipoParaExcluir: string = '';
-
-  historicoFiltrado: any[] = [];
-  categorias: any[] = [];
-  formasPagamento: any[] = [];
-  paginaAtual: number = 1;
-  totalPaginas: number = 1;
-  totalRegistos: number = 0;
-
-  filtrosAtivos = { search: '', tipo: 'todos', categoria: 'todas', meio: 'todos', ordenacao: 'recentes', data_inicio: '', data_fim: '' };
   private apiUrl = 'http://localhost:8000/api';
   private searchSubject = new Subject<string>();
 
-  constructor(private http: HttpClient, private cdr: ChangeDetectorRef, private router: Router) {}
+  // Dados e Listagens
+  transacao: any = { valor: null, data: '', categoria_id: '', forma_pagamento_id: '', fornecedor: '', descricao: '' };
+  itemParaEditar: any = {};
+  historicoFiltrado: any[] = [];
+  categorias: any[] = [];
+  formasPagamento: any[] = [];
+  
+  // UI States
+  carregando: boolean = false;
+  carregandoTabela: boolean = false;
+  tipoLancamento: 'receita' | 'despesa' = 'receita';
+  usuarioPerfil: string = '';
+
+  // Toasts
+  exibirToast: boolean = false;
+  mensagemToast: string = '';
+  tipoToast: 'sucesso' | 'erro' = 'sucesso';
+
+  // Modais
+  mostrarModalCriar: boolean = false;
+  mostrarModalEditar: boolean = false;
+  mostrarModalExcluir: boolean = false;
+
+  // Paginação
+  paginaAtual: number = 1;
+  totalPaginas: number = 1;
+  totalRegistos: number = 0;
+  filtrosAtivos = { search: '', tipo: 'todos', categoria: 'todas', ordenacao: 'recentes' };
+
+  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-    this.capturarPermissoes();
-    this.carregarParametrosIniciais();
+    const user = localStorage.getItem('safeq_user');
+    this.usuarioPerfil = user ? JSON.parse(user).role : '';
+    this.resetarFormulario();
+    this.carregarParametros();
     this.carregarHistorico();
 
     this.searchSubject.pipe(debounceTime(500), distinctUntilChanged()).subscribe(texto => {
       this.filtrosAtivos.search = texto;
+      this.paginaAtual = 1;
       this.carregarHistorico();
     });
   }
 
   ngOnDestroy(): void { this.searchSubject.complete(); }
 
-  // --- CONTROLE DE MODAIS ---
-  abrirModalEditar(item: any): void {
-    // IMPORTANTE: Preencher os IDs para o formulário de edição reconhecer os Selects
-    this.itemParaEditar = { 
-      ...item,
-      categoria_id: item.categoria?.id || item.categoria_id,
-      forma_pagamento_id: item.forma_pagamento?.id || item.forma_pagamento_id
-    };
-    this.mostrarModalEditar = true;
+  private notify(msg: string, type: 'sucesso' | 'erro') {
+    this.mensagemToast = msg; this.tipoToast = type; this.exibirToast = true;
     this.cdr.detectChanges();
+    setTimeout(() => { this.exibirToast = false; this.cdr.detectChanges(); }, 4000);
   }
 
-  fecharModalEditar(): void {
-    this.mostrarModalEditar = false;
-    this.cdr.detectChanges();
-  }
-
-  abrirModalExcluir(item: any): void {
-    this.idParaExcluir = item.id;
-    this.tipoParaExcluir = item.tipo;
-    this.mostrarModalExcluir = true;
-    this.cdr.detectChanges();
-  }
-
-  fecharModalExcluir(): void {
-    this.mostrarModalExcluir = false;
-    this.cdr.detectChanges();
-  }
-
-  // --- MÉTODOS DE API ---
   carregarHistorico(): void {
-    const headers = this.obterHeaders();
     this.carregandoTabela = true;
-    let params = new HttpParams()
-      .set('search', this.filtrosAtivos.search)
+    this.cdr.detectChanges();
+
+    // LIMITADOR RIGOROSO
+    const params = new HttpParams()
       .set('page', this.paginaAtual.toString())
+      .set('per_page', '11')
+      .set('search', this.filtrosAtivos.search)
       .set('categoria_id', this.filtrosAtivos.categoria === 'todas' ? '' : this.filtrosAtivos.categoria)
-      .set('forma_pagamento_id', this.filtrosAtivos.meio === 'todos' ? '' : this.filtrosAtivos.meio);
+      .set('ordenacao', this.filtrosAtivos.ordenacao);
 
     const endpoint = this.filtrosAtivos.tipo === 'todos' ? 'lancamentos' : this.filtrosAtivos.tipo + 's';
-    this.http.get(`${this.apiUrl}/${endpoint}`, { headers, params }).subscribe({
+
+    this.http.get(`${this.apiUrl}/${endpoint}`, { headers: this.obterHeaders(), params }).subscribe({
       next: (res: any) => {
-        this.historicoFiltrado = res.dados.data || [];
-        this.paginaAtual = res.dados.current_page || 1;
-        this.totalPaginas = res.dados.last_page || 1;
-        this.totalRegistos = res.dados.total || 0;
+        if (res.dados) {
+          this.historicoFiltrado = res.dados.data || [];
+          this.paginaAtual = res.dados.current_page || 1;
+          this.totalPaginas = res.dados.last_page || 1;
+          this.totalRegistos = res.dados.total || 0;
+        }
         this.carregandoTabela = false;
-        this.cdr.detectChanges();
+        this.cdr.detectChanges(); 
       },
-      error: () => { this.carregandoTabela = false; this.cdr.detectChanges(); }
+      error: () => { 
+        this.carregandoTabela = false; 
+        this.notify('Erro ao sincronizar histórico.', 'erro');
+        this.cdr.detectChanges(); 
+      }
     });
   }
 
-  //  SALVAR EDIÇÃO 
-  salvarEdicao(): void {
-    this.carregando = true;
-    const endpoint = this.itemParaEditar.tipo === 'receita' ? 'receitas' : 'despesas';
-    
-    const payload = {
-      valor: this.itemParaEditar.valor,
-      data: this.itemParaEditar.data,
-      fornecedor: this.itemParaEditar.fornecedor,
-      descricao: this.itemParaEditar.descricao,
-      categoria_id: this.itemParaEditar.categoria_id,
-      forma_pagamento_id: this.itemParaEditar.forma_pagamento_id
-    };
+  mudarPagina(p: number): void {
+    if (p < 1 || p > this.totalPaginas || p === this.paginaAtual) {
+      return;
+    }
+    this.paginaAtual = p;
+    this.carregarHistorico();
+  }
 
-    this.http.put(`${this.apiUrl}/${endpoint}/${this.itemParaEditar.id}`, payload, { headers: this.obterHeaders() }).subscribe({
+  // --- OPERAÇÕES CRUD ---
+  salvarNovoLancamento(): void {
+    if (this.carregando) return;
+    this.carregando = true;
+
+    const endpoint = this.tipoLancamento === 'receita' ? 'receitas' : 'despesas';
+    const payload = { ...this.transacao };
+    if (!payload.fornecedor) delete payload.fornecedor;
+    if (!payload.descricao) delete payload.descricao;
+
+    this.http.post(`${this.apiUrl}/${endpoint}`, payload, { headers: this.obterHeaders() }).subscribe({
       next: () => {
-        this.mensagemSucesso = 'Registo atualizado com sucesso!';
         this.carregando = false;
-        this.fecharModalEditar();
+        this.notify('Lançamento guardado com sucesso!', 'sucesso');
+        this.fecharModalCriar();
         this.carregarHistorico();
-        this.limparAlertas();
       },
       error: (err) => {
         this.carregando = false;
-        this.mensagemErro = 'Erro ao salvar: Verifique os campos.';
-        console.error(err);
-        this.limparAlertas();
+        let msg = 'Erro no servidor (500).';
+        if (err.status === 422 && err.error?.errors) {
+          const erros: any = Object.values(err.error.errors);
+          msg = erros[0][0];
+        }
+        this.notify(msg, 'erro');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  salvarEdicao(): void {
+    this.carregando = true;
+    const endpoint = this.itemParaEditar.tipo === 'receita' ? 'receitas' : 'despesas';
+    this.http.put(`${this.apiUrl}/${endpoint}/${this.itemParaEditar.id}`, this.itemParaEditar, { headers: this.obterHeaders() }).subscribe({
+      next: () => {
+        this.carregando = false;
+        this.notify('Registro atualizado com sucesso!', 'sucesso');
+        this.fecharModalEditar();
+        this.carregarHistorico();
+      },
+      error: () => { 
+        this.carregando = false; 
+        this.notify('Erro ao atualizar.', 'erro'); 
+        this.cdr.detectChanges(); 
       }
     });
   }
 
   confirmarExclusao(): void {
-    if (!this.idParaExcluir) return;
-    const endpoint = this.tipoParaExcluir === 'receita' ? 'receitas' : 'despesas';
-    this.http.delete(`${this.apiUrl}/${endpoint}/${this.idParaExcluir}`, { headers: this.obterHeaders() }).subscribe({
+    const endpoint = this.itemParaEditar.tipo === 'receita' ? 'receitas' : 'despesas';
+    this.http.delete(`${this.apiUrl}/${endpoint}/${this.itemParaEditar.id}`, { headers: this.obterHeaders() }).subscribe({
       next: () => {
-        this.mensagemSucesso = 'Registo removido!';
+        this.notify('Removido com sucesso!', 'sucesso');
         this.fecharModalExcluir();
         this.carregarHistorico();
-        this.limparAlertas();
+      },
+      error: () => { 
+        this.notify('Erro ao excluir registro.', 'erro'); 
+        this.cdr.detectChanges(); 
       }
     });
   }
 
-  executarLancamento(): void {
-    this.carregando = true;
-    const endpoint = this.tipoLancamento === 'receita' ? 'receitas' : 'despesas';
-    this.http.post(`${this.apiUrl}/${endpoint}`, this.transacao, { headers: this.obterHeaders() }).subscribe({
-      next: () => {
-        this.mensagemSucesso = 'Registo guardado!';
-        this.carregando = false;
-        this.resetarFormulario();
-        this.carregarHistorico();
-        this.limparAlertas();
-      },
-      error: () => { this.carregando = false; this.cdr.detectChanges(); }
-    });
+  // --- MODAIS ---
+  abrirModalCriar() { this.resetarFormulario(); this.mostrarModalCriar = true; this.cdr.detectChanges(); }
+  fecharModalCriar() { this.mostrarModalCriar = false; this.cdr.detectChanges(); }
+
+  abrirModalEditar(item: any) {
+    this.itemParaEditar = JSON.parse(JSON.stringify(item));
+    this.itemParaEditar.categoria_id = item.categoria?.id || item.categoria_id;
+    this.itemParaEditar.forma_pagamento_id = item.forma_pagamento?.id || item.forma_pagamento_id;
+    this.mostrarModalEditar = true;
+    this.cdr.detectChanges();
   }
+  fecharModalEditar() { this.mostrarModalEditar = false; this.cdr.detectChanges(); }
+
+  abrirModalExcluir(item: any) { 
+    this.itemParaEditar = item; 
+    this.mostrarModalExcluir = true; 
+    this.cdr.detectChanges(); 
+  }
+  fecharModalExcluir() { this.mostrarModalExcluir = false; this.cdr.detectChanges(); }
 
   // --- AUXILIARES ---
-  private carregarParametrosIniciais(): void {
-    const headers = this.obterHeaders();
-    this.http.get(`${this.apiUrl}/categorias`, { headers }).subscribe((res: any) => this.categorias = res.dados || []);
-    this.http.get(`${this.apiUrl}/formas-pagamento`, { headers }).subscribe((res: any) => this.formasPagamento = res.dados || []);
+  onSearch(texto: string) { this.searchSubject.next(texto); }
+
+  aplicarFiltrosManuais(filtros: any) { 
+    this.filtrosAtivos = { ...this.filtrosAtivos, ...filtros }; 
+    this.paginaAtual = 1; 
+    this.carregarHistorico(); 
   }
 
-  private obterHeaders(): HttpHeaders { return new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem('safeq_token')}` }); }
-  private resetarFormulario(): void { this.transacao = { valor: null, data: '2026-07-05', categoria_id: '', forma_pagamento_id: '', fornecedor: '', descricao: '' }; }
-  private limparAlertas(): void { setTimeout(() => { this.mensagemSucesso = ''; this.mensagemErro = ''; this.cdr.detectChanges(); }, 3500); }
-  private capturarPermissoes(): void { const user = JSON.parse(localStorage.getItem('safeq_user') || '{}'); this.usuarioPerfil = user.role; }
-  mudarPagina(p: number): void { if (p >= 1 && p <= this.totalPaginas) { this.paginaAtual = p; this.carregarHistorico(); } }
-  alternarVisibilidadeFormulario(): void { this.formularioVisivel = !this.formularioVisivel; }
-  mudarAbaFormulario(tipo: any): void { this.tipoLancamento = tipo; this.resetarFormulario(); }
-  onSearch(texto: any): void { this.searchSubject.next(texto); }
-  aplicarFiltrosManuais(filtros: any): void { this.filtrosAtivos = filtros; this.paginaAtual = 1; this.carregarHistorico(); }
+  private obterHeaders() {
+    return new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem('safeq_token')}` });
+  }
+
+  private carregarParametros() {
+    this.http.get(`${this.apiUrl}/categorias`, { headers: this.obterHeaders() }).subscribe((res: any) => this.categorias = res.dados || []);
+    this.http.get(`${this.apiUrl}/formas-pagamento`, { headers: this.obterHeaders() }).subscribe((res: any) => this.formasPagamento = res.dados || []);
+  }
+
+  private resetarFormulario() {
+    this.transacao = { 
+      valor: null, 
+      data: new Date().toISOString().split('T')[0], 
+      categoria_id: '', 
+      forma_pagamento_id: '', 
+      fornecedor: '', 
+      descricao: '' 
+    };
+  }
 }

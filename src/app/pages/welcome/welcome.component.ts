@@ -10,7 +10,6 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./welcome.component.scss']
 })
 export class WelcomeComponent implements OnInit {
-  // Controle de estado reativo para pausar o carrossel via clique
   esteiraPausada: boolean = false;
   
   ngOnInit(): void {
@@ -18,7 +17,7 @@ export class WelcomeComponent implements OnInit {
   }
 
   /**
-   * Ativa ou desativa a pausa do movimento contínuo dos cartões corporativos.
+   *
    */
   alternarPausaEsteira(): void {
     this.esteiraPausada = !this.esteiraPausada;

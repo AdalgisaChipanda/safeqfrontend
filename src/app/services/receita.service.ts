@@ -12,7 +12,7 @@ export class ReceitaService {
   constructor(private http: HttpClient) {}
 
   /**
-   * Obtém a lista completa de receitas cadastradas na base de dados.
+   * Obtém a lista completa de receitas
    */
   obterReceitas(filtros?: any): Observable<any> {
     const headers = this.obterHeadersAutenticados();
@@ -20,7 +20,7 @@ export class ReceitaService {
   }
 
   /**
-   * Envia uma nova receita (entrada) para ser salva no banco de dados.
+   * Envia uma nova receita 
    */
   salvarReceita(dados: any): Observable<any> {
     const headers = this.obterHeadersAutenticados();
@@ -28,7 +28,7 @@ export class ReceitaService {
   }
 
   /**
-   * Obtém a lista completa de despesas cadastradas na base de dados.
+   * Obtém a lista completa de despesas
    */
   obterDespesas(filtros?: any): Observable<any> {
     const headers = this.obterHeadersAutenticados();
@@ -36,7 +36,7 @@ export class ReceitaService {
   }
 
   /**
-   * Envia uma nova despesa (saída) 
+   * Envia uma nova despesa 
    */
   salvarDespesa(dados: any): Observable<any> {
     const headers = this.obterHeadersAutenticados();
@@ -44,7 +44,7 @@ export class ReceitaService {
   }
 
   /**
-   * Auxiliar: Captura o token do LocalStorage 
+   * 
    */
   private obterHeadersAutenticados(): HttpHeaders {
     const token = localStorage.getItem('safeq_token');
